@@ -29,11 +29,18 @@ namespace istore_api.src.Domain.Models
 
 
         public ProductCharacteristicElem ToProductCharacteristicElem()
-            => new()
+        {
+            var colorType = CharacteristicType.Color.ToString();
+            var values = Values.Split(";").ToList();
+            if(Type == colorType)
+                values = values.Select(filename => $"{Constants.webPathToProductIcons}{filename}").ToList();
+
+            return new ProductCharacteristicElem()
             {
                 Color = Color,
                 Hex = Hex,
-                Values = Values.Split(";").ToList(),
+                Values = values
             };
+        }
     }
 }

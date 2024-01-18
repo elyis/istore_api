@@ -41,7 +41,8 @@ namespace istore_api.src.Domain.Models
                 {
                     Name = e.Name,
                     Type = CharacteristicType.Text,
-                    Elems = e.Values.Split(";").Select(e => new ProductCharacteristicElem
+                    Elems = e.Values.Split(";").Select(e => 
+                    new ProductCharacteristicElem
                     {
                         Color = null,
                         Hex = null,
