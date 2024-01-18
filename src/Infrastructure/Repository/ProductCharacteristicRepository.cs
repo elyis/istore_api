@@ -37,7 +37,7 @@ namespace istore_api.src.Infrastructure.Repository
             return productCharacteristic;
         }
 
-        public async Task AddImagesToProduct(List<ProductCha\racteristic> productCharacteristics, Guid productId)
+        public async Task AddImagesToProduct(List<ProductCharacteristic> productCharacteristics, Guid productId)
         {
             var colorType = CharacteristicType.Color.ToString();
             var characteristics = await GetAll(productId);
