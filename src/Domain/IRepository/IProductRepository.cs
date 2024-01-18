@@ -10,6 +10,5 @@ namespace istore_api.src.Domain.IRepository
         Task<IEnumerable<Product>> GetAll(string deviceModelName);
         Task<Product?> AddAsync(DeviceModel deviceModel, CreateProductBody productBody);
         Task<Product?> UpdateAsync(UpdatingProductBody productBody);
-        Task AddProductImages(List<ProductImage> productImages);
     }
 }

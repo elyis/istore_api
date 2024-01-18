@@ -10,20 +10,13 @@ namespace istore_api.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Type",
-                table: "ProductCharacteristics");
+
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Type",
-                table: "ProductCharacteristics",
-                type: "TEXT",
-                nullable: false,
-                defaultValue: "");
+
         }
     }
 }

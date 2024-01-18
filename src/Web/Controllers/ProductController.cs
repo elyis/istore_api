@@ -32,8 +32,7 @@ namespace istore_api.src.Web.Controllers
                 return BadRequest("pattern is empty or null");
 
             var products = await _productRepository.GetAllByPatternName(patternName);
-            var result = products.Select(e => e.ToProductBody());
-            return Ok(result);
+            return Ok(products);
         }
 
 

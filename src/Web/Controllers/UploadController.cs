@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ namespace istore_api.src.Web.Controllers
     {
         private readonly IFileUploaderService _fileUploaderService;
         private readonly IProductRepository _productRepository;
+        private readonly IProductCharacteristicRepository _productCharacteristicRepository;
         private readonly ContentInspector _contentInspector;
         private readonly string _supportedIconMime;
 
@@ -21,18 +23,21 @@ namespace istore_api.src.Web.Controllers
         public UploadController(
             IFileUploaderService fileUploaderService,
             IProductRepository productRepository,
+            IProductCharacteristicRepository productCharacteristicRepository,
             ContentInspector contentInspector
         )
         {
             _fileUploaderService = fileUploaderService;
             _contentInspector = contentInspector;
             _productRepository = productRepository;
+            _productCharacteristicRepository = productCharacteristicRepository;
             _supportedIconMime = "image/";
         }
 
+
         [HttpPost("productIcon")]
         public async Task<IActionResult> UploadIcons(
-            [FromQuery] Guid productId, 
+            [FromForm] Guid productId, 
             [FromForm] string hex,
             [FromForm] string color, 
             [FromForm] IFormFileCollection formFiles
@@ -49,7 +54,7 @@ namespace istore_api.src.Web.Controllers
 
             var files = Request.Form.Files;
             if(files.Count == 0)
-                return BadRequest("the files are not attached or their count does not match the number of colors");
+                return BadRequest("the files are not attached");
 
             var product = await _productRepository.GetAsync(productId);
             if(product == null)
@@ -58,40 +63,23 @@ namespace istore_api.src.Web.Controllers
             var result = await UploadImagesAsync(Constants.localPathToProductIcons, files);
             if(result is OkObjectResult objectResult)
             {
-                var imagesWithColors = new List<ProductImage>();
                 var filenameGroups = (List<string>[])objectResult.Value!;
-
-                foreach(var filenames in filenameGroups)
-                {
-                    if(filenames.Count == 2)
-                    {
-                        var filenameWithWebpFormat = filenames.First(e => e.EndsWith(".webp"));
-                        var filenameDetailedImage = filenames.First(e => e != filenameWithWebpFormat);
-
-                        var reviewImage = new ProductImage
-                        {
-                            Filename = filenameWithWebpFormat,
-                            Color = color,
-                            IsPreviewImage = true,
-                            Hex = hex,
-                            Product = product
-                        };
-
-                        var mainImage = new ProductImage
-                        {
-                            Filename = filenameDetailedImage,
-                            Color = color,
-                            IsPreviewImage = false,
-                            Hex = hex,
-                            Product = product
-                        };
-
-                        imagesWithColors.Add(mainImage);
-                        imagesWithColors.Add(reviewImage);
-                    }
-                }
+                var colorString = CharacteristicType.Color.ToString();
                 
-                await _productRepository.AddProductImages(imagesWithColors);
+                var productCharacteristics = filenameGroups
+                .Select(filenames => 
+                new ProductCharacteristic
+                {
+                    Name = colorString,
+                    Color = color,
+                    Hex = hex,
+                    Type = colorString,
+                    Values = string.Join(";", filenames),
+                    Product = product
+                })
+                .ToList();
+                
+                await _productCharacteristicRepository.AddImagesToProduct(productCharacteristics, productId);
                 return Ok();
             }
 
@@ -125,7 +113,7 @@ namespace istore_api.src.Web.Controllers
 
                 var fileExtensions = new List<string>
                 {
-                    bestMatchMimeType.Split("/").Last(),
+                    // bestMatchMimeType.Split("/").Last(),
                     "webp"
                 };
                 streams.Add((stream, fileExtensions));

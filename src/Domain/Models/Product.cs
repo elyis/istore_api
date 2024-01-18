@@ -8,110 +8,58 @@ namespace istore_api.src.Domain.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public float Price { get; set; }
 
         public string DeviceModelName { get; set; }
         public DeviceModel DeviceModel { get; set; }
+        public List<ProductCharacteristic> ProductCharacteristics { get; set; } = new();
+        public List<ProductConfiguration> ProductConfigurations { get; set; } = new();
+
         public List<OrderProducts> Orders { get; set; } = new();
-        public List<ProductImage> ProductImages { get; set; } = new();
-        public List<ProductCharacteristicVariant> CharacteristicVariants { get; set; } = new();
 
-        private List<Filter> ToFilters()
+        public List<FilterCharacteristic> ToFilterCharacteristics()
         {
-            var filters = new List<Filter>();
-            var colorFilter = ProductImages
-                .Where(e => e.IsPreviewImage)
-                .Select(e => e.ToElem())
-                .ToList();
+            var filters = new List<FilterCharacteristic>();
+            var colorType = CharacteristicType.Color.ToString();
+            var textType = CharacteristicType.Text.ToString();
 
-            if (colorFilter.Any())
+            var colorElems = ProductCharacteristics.Where(e => e.Type == colorType);
+            if(colorElems.Any())
             {
-                filters.Add(new Filter
+                var colorFilter = new FilterCharacteristic
                 {
-                    Name = "Color",
-                    Type = FilterType.Color,
-                    Elems = colorFilter
-                });
+                    Type = CharacteristicType.Color,
+                    Name = CharacteristicType.Color.ToString(),
+                    Elems = colorElems.Select(e => e.ToProductCharacteristicElem()).ToList()
+                };
+
+                filters.Add(colorFilter);
             }
 
-            filters.AddRange(CharacteristicVariants.Select(e => e.ToFilter()));
+            var textCharacteristics = ProductCharacteristics.Where(e => e.Type == textType);
+            var textFilters = textCharacteristics.Select(e => 
+                new FilterCharacteristic
+                {
+                    Name = e.Name,
+                    Type = CharacteristicType.Text,
+                    Elems = e.Values.Split(";").Select(e => new ProductCharacteristicElem
+                    {
+                        Color = null,
+                        Hex = null,
+                        Values = new List<string> {e}
+                    })
+                    .ToList()
+                });
+            filters.AddRange(textFilters);
             return filters;
         }
 
         public ProductBody ToProductBody()
-        {
-            return new ProductBody
+            => new()
             {
                 ProductId = Id,
                 Name = Name,
-                Filters = ToFilters(),
-                ProductVariantBodies = ToProductVariantBodies()
+                Filters = ToFilterCharacteristics(),
+                ProductConfigurations = ProductConfigurations.Select(e => e.ToProductConfigCharacteristic()).ToList()
             };
-        }
-
-        public List<ProductVariantBody> ToProductVariantBodies()
-        {
-            var result = new List<ProductVariantBody>();
-            var productImagesGrouped = ProductImages.Where(e => e.IsPreviewImage).GroupBy(e => e.Color);
-
-            var characteristicsPairs = CharacteristicVariants.Select(e => e.ToCharacteristicPairs()).ToList();
-            var uniquePermutations = GenerateUniquePermutations(characteristicsPairs);
-            
-            if(!ProductImages.Any())
-            {
-                foreach(var permutation in uniquePermutations)
-                {
-                    var priceModifier = permutation.Sum(e => e.PriceModifier);
-                    var produDb = new ProductVariantBody
-                    {
-                        Color = null,
-                        Characteristics = permutation.ToList(),
-                        TotalPrice = Price + priceModifier
-                    };
-                    result.Add(produDb);
-                }
-            }
-
-            foreach(var productImageGroup in productImagesGrouped)
-            {
-                foreach(var permutation in uniquePermutations)
-                {
-                    var priceModifier = permutation.Sum(e => e.PriceModifier);
-                    var produDb = new ProductVariantBody
-                    {
-                        Color = productImageGroup.Key,
-                        Characteristics = permutation.ToList(),
-                        ImageUrls = productImageGroup.Select(e => $"{Constants.webPathToProductIcons}{e.Filename}").ToList(),
-                        TotalPrice = Price + priceModifier
-                    };
-                    result.Add(produDb);
-                }
-            }
-
-            return result;
-        }
-
-        static IEnumerable<IEnumerable<T>> GenerateUniquePermutations<T>(List<List<T>> nestedArrays)
-        {
-            var result = new List<IEnumerable<T>>();
-            GeneratePermutations(nestedArrays, 0, new List<T>(), result);
-            return result;
-        }
-
-        static void GeneratePermutations<T>(List<List<T>> nestedArrays, int currentIndex, List<T> currentPermutation, List<IEnumerable<T>> result)
-        {
-            if (currentIndex == nestedArrays.Count)
-            {
-                result.Add(currentPermutation.ToList());
-                return;
-            }
-
-            foreach (var item in nestedArrays[currentIndex].Distinct())
-            {
-                currentPermutation.Add(item);
-                GeneratePermutations(nestedArrays, currentIndex + 1, currentPermutation, result);
-                currentPermutation.RemoveAt(currentPermutation.Count - 1);
-            }
-        }
     }
 }

@@ -20,7 +20,7 @@ namespace istore_api.src.Domain.Entities.Response
     public class Filter
     {
         public string Name { get; set; }
-        public FilterType Type { get; set; }
+        public CharacteristicType Type { get; set; }
         public List<Elem> Elems { get; set; }
     }
 

@@ -11,14 +11,40 @@ using istore_api.src.Infrastructure.Data;
 namespace istore_api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240111045340_init")]
-    partial class init
+    [Migration("20240118094628_init4")]
+    partial class init4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.11");
+
+            modelBuilder.Entity("istore_api.src.Domain.Models.BlogTopic", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ShortDescription")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Blogs");
+                });
 
             modelBuilder.Entity("istore_api.src.Domain.Models.DeviceModel", b =>
                 {
@@ -34,31 +60,6 @@ namespace istore_api.Migrations
                     b.HasIndex("ProductCategoryName");
 
                     b.ToTable("DeviceModels");
-                });
-
-            modelBuilder.Entity("istore_api.src.Domain.Models.OptionsCombiningCharacteristic", b =>
-                {
-                    b.Property<string>("ImageFilename")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CharacteristicName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProductCharacteristicName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ProductImageFilename")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("ImageFilename", "CharacteristicName");
-
-                    b.HasIndex("ProductCharacteristicName");
-
-                    b.HasIndex("ProductImageFilename");
-
-                    b.ToTable("OptionsCombiningCharacteristics");
                 });
 
             modelBuilder.Entity("istore_api.src.Domain.Models.Order", b =>
@@ -129,9 +130,6 @@ namespace istore_api.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<float>("Price")
-                        .HasColumnType("REAL");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DeviceModelName");
@@ -151,7 +149,18 @@ namespace istore_api.Migrations
 
             modelBuilder.Entity("istore_api.src.Domain.Models.ProductCharacteristic", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Hex")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ProductId")
@@ -165,33 +174,79 @@ namespace istore_api.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Name");
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductCharacteristics");
                 });
 
-            modelBuilder.Entity("istore_api.src.Domain.Models.ProductImage", b =>
+            modelBuilder.Entity("istore_api.src.Domain.Models.ProductConfigCharacteristic", b =>
                 {
-                    b.Property<string>("Filename")
+                    b.Property<Guid>("ProductCharacteristicId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Color")
+                    b.Property<Guid>("ProductConfigurationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsPreviewImage")
-                        .HasColumnType("INTEGER");
+                    b.HasKey("ProductCharacteristicId", "ProductConfigurationId");
+
+                    b.HasIndex("ProductConfigurationId");
+
+                    b.ToTable("ProductConfigCharacteristics");
+                });
+
+            modelBuilder.Entity("istore_api.src.Domain.Models.ProductConfiguration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid>("ProductId")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Filename");
+                    b.HasKey("Id");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductImages");
+                    b.ToTable("ProductConfigurations");
+                });
+
+            modelBuilder.Entity("istore_api.src.Domain.Models.PromoCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DateExpiration")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<float>("Value")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.ToTable("PromoCodes");
                 });
 
             modelBuilder.Entity("istore_api.src.Domain.Models.User", b =>
@@ -256,25 +311,6 @@ namespace istore_api.Migrations
                     b.Navigation("ProductCategory");
                 });
 
-            modelBuilder.Entity("istore_api.src.Domain.Models.OptionsCombiningCharacteristic", b =>
-                {
-                    b.HasOne("istore_api.src.Domain.Models.ProductCharacteristic", "ProductCharacteristic")
-                        .WithMany("OptionsCombiningCharacteristic")
-                        .HasForeignKey("ProductCharacteristicName")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("istore_api.src.Domain.Models.ProductImage", "ProductImage")
-                        .WithMany("OptionsCombiningCharacteristic")
-                        .HasForeignKey("ProductImageFilename")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProductCharacteristic");
-
-                    b.Navigation("ProductImage");
-                });
-
             modelBuilder.Entity("istore_api.src.Domain.Models.OrderProducts", b =>
                 {
                     b.HasOne("istore_api.src.Domain.Models.Order", "Order")
@@ -308,7 +344,7 @@ namespace istore_api.Migrations
             modelBuilder.Entity("istore_api.src.Domain.Models.ProductCharacteristic", b =>
                 {
                     b.HasOne("istore_api.src.Domain.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("ProductCharacteristics")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -316,10 +352,29 @@ namespace istore_api.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("istore_api.src.Domain.Models.ProductImage", b =>
+            modelBuilder.Entity("istore_api.src.Domain.Models.ProductConfigCharacteristic", b =>
+                {
+                    b.HasOne("istore_api.src.Domain.Models.ProductCharacteristic", "ProductCharacteristic")
+                        .WithMany("ProductConfigCharacteristics")
+                        .HasForeignKey("ProductCharacteristicId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("istore_api.src.Domain.Models.ProductConfiguration", "ProductConfiguration")
+                        .WithMany("Characteristics")
+                        .HasForeignKey("ProductConfigurationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProductCharacteristic");
+
+                    b.Navigation("ProductConfiguration");
+                });
+
+            modelBuilder.Entity("istore_api.src.Domain.Models.ProductConfiguration", b =>
                 {
                     b.HasOne("istore_api.src.Domain.Models.Product", "Product")
-                        .WithMany("ProductImages")
+                        .WithMany("ProductConfigurations")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -341,7 +396,9 @@ namespace istore_api.Migrations
                 {
                     b.Navigation("Orders");
 
-                    b.Navigation("ProductImages");
+                    b.Navigation("ProductCharacteristics");
+
+                    b.Navigation("ProductConfigurations");
                 });
 
             modelBuilder.Entity("istore_api.src.Domain.Models.ProductCategory", b =>
@@ -351,12 +408,12 @@ namespace istore_api.Migrations
 
             modelBuilder.Entity("istore_api.src.Domain.Models.ProductCharacteristic", b =>
                 {
-                    b.Navigation("OptionsCombiningCharacteristic");
+                    b.Navigation("ProductConfigCharacteristics");
                 });
 
-            modelBuilder.Entity("istore_api.src.Domain.Models.ProductImage", b =>
+            modelBuilder.Entity("istore_api.src.Domain.Models.ProductConfiguration", b =>
                 {
-                    b.Navigation("OptionsCombiningCharacteristic");
+                    b.Navigation("Characteristics");
                 });
 #pragma warning restore 612, 618
         }

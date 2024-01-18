@@ -22,7 +22,6 @@ namespace istore_api.src.Infrastructure.Repository
             {
                 Name = productBody.Name,
                 Description = productBody.Description,
-                Price = productBody.Price,
                 DeviceModel = deviceModel
             };
 
@@ -32,11 +31,6 @@ namespace istore_api.src.Infrastructure.Repository
             return product;
         }
 
-        public async Task AddProductImages(List<ProductImage> productImages)
-        {
-            await _context.ProductImages.AddRangeAsync(productImages);
-            await _context.SaveChangesAsync();
-        }
 
         public async Task<IEnumerable<Product>> GetAllByPatternName(string pattern)
         {
@@ -46,15 +40,15 @@ namespace istore_api.src.Infrastructure.Repository
             return await _context.Products
                 .Where(e => 
                     EF.Functions.Like(e.Name.ToLower(), $"%{pattern}%"))
-                .Include(e => e.ProductImages)
-                .Include(e => e.CharacteristicVariants)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Product>> GetAll(string deviceModelName)
             => await _context.Products
-                .Include(e => e.ProductImages)
-                .Include(e => e.CharacteristicVariants)
+                .Include(e => e.ProductCharacteristics)
+                .Include(e => e.ProductConfigurations)
+                    .ThenInclude(e => e.Characteristics)
+                        .ThenInclude(e => e.ProductCharacteristic)
                 .Where(e => e.DeviceModelName == deviceModelName)
                 .ToListAsync();
 
@@ -67,7 +61,6 @@ namespace istore_api.src.Infrastructure.Repository
             if(product == null)
                 return null;
 
-            product.Price = productBody.Price;
             product.Name = productBody.Name;
             product.Description = productBody.Description;
             await _context.SaveChangesAsync();
