@@ -8,5 +8,6 @@ namespace istore_api.src.Domain.IRepository
         Task<PromoCode?> AddAsync(CreatePromoCodeBody promoCodeBody);
         Task<PromoCode?> GetOrRemoveExpiredAsync(string code);
         Task<IEnumerable<PromoCode>> GetAllAsync(bool isActive);
+        Task<bool> ActivePromocode(string code);
     }
 }

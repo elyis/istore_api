@@ -113,8 +113,8 @@ namespace istore_api.src.Web.Controllers
 
                 var fileExtensions = new List<string>
                 {
-                    // bestMatchMimeType.Split("/").Last(),
-                    "webp"
+                    bestMatchMimeType.Split("/").Last(),
+                    // "webp"
                 };
                 streams.Add((stream, fileExtensions));
             }

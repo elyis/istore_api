@@ -67,5 +67,11 @@ namespace istore_api.src.Infrastructure.Repository
 
             return product;
         }
+
+        public async Task<IEnumerable<ProductConfiguration>> GetAll(IEnumerable<Guid> configIds)
+            => await _context.ProductConfigurations
+                .Where(e => 
+                    configIds.Contains(e.Id))
+                .ToListAsync();
     }
 }

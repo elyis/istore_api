@@ -41,6 +41,7 @@ namespace istore_api.src.Infrastructure.Repository
             var colorType = CharacteristicType.Color.ToString();
             var characteristics = await GetAll(productId);
             var colorCharacteristics = characteristics.Where(e => e.Type == colorType && e.Color != null).ToList();
+            var isFirstColor = !colorCharacteristics.Any();
 
             var addedCharacteristics = new List<ProductCharacteristic>();
             foreach(var productCharacteristic in productCharacteristics)
@@ -64,7 +65,13 @@ namespace istore_api.src.Infrastructure.Repository
             }
 
             if(addedCharacteristics.Any()){
-                await _context.ProductCharacteristics.AddRangeAsync(addedCharacteristics);
+                if(isFirstColor)
+                {
+                    var configurations = await _context.ProductConfigurations.Where(e => e.ProductId == productId).ToListAsync();
+                    _context.ProductConfigurations.RemoveRange(configurations);
+                    await _context.SaveChangesAsync();
+                }
+
                 var addedColorCharacteristic = addedCharacteristics.Where(e => e.Type == colorType);
                 if(addedColorCharacteristic.Any())
                     await CreateConfigurations(productId, addedCharacteristics);

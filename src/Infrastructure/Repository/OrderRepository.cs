@@ -1,29 +1,52 @@
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
+using istore_api.src.Infrastructure.Data;
 
 namespace istore_api.src.Infrastructure.Repository
 {
-    // public class OrderRepository : IOrderRepository
-    // {
-    //     public Task<Order?> AddAsync(CreateOrderBody orderBody, List<ProductConfiguration> configurations)
-    //     {
-    //         var totalSum = configurations.Sum(e => e.)
+    public class OrderRepository : IOrderRepository
+    {
+        private readonly AppDbContext _context;
 
-    //         var order = new Order
-    //         {
-    //             Fullname = orderBody.Fullname,
-    //             Comment = orderBody.Comment,
-    //             CommunicationMethod = orderBody.CommunicationMethod.ToString(),
-    //             Email = orderBody.Email,
-    //             Phone = orderBody.Phone,
-    //             // Products
-    //         };
-    //     }
+        public OrderRepository(AppDbContext context)
+        {
+            _context = context;
+        }
 
-    //     public Task<Order?> GetAsync(Guid id)
-    //     {
-    //         throw new NotImplementedException();
-    //     }
-    // }
+        public async Task<Order?> AddAsync(CreateOrderBody orderBody, List<ProductConfiguration> configurations, float totalSum)
+        {
+            var products = new List<OrderProduct>();
+            foreach(var config in configurations)
+            {
+                var product = new OrderProduct
+                {
+                    ProductConfiguration = config,
+                    Count = orderBody.Configurations.First(e => e.ConfigurationId == config.Id).Count,
+                };
+                products.Add(product);
+            }
+
+            var order = new Order
+            {
+                Fullname = orderBody.Fullname,
+                Comment = orderBody.Comment,
+                CommunicationMethod = orderBody.CommunicationMethod.ToString(),
+                Email = orderBody.Email,
+                Phone = orderBody.Phone,
+                TotalSum = totalSum,
+                Products = products,
+            };
+
+            order = (await _context.Orders.AddAsync(order))?.Entity;
+            await _context.SaveChangesAsync();
+
+            return order;
+        }
+
+        public Task<Order?> GetAsync(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

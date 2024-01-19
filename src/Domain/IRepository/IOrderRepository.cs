@@ -5,7 +5,7 @@ namespace istore_api.src.Domain.IRepository
 {
     public interface IOrderRepository
     {
-        Task<Order?> AddAsync(CreateOrderBody orderBody, List<ProductConfiguration> configurations);
+        Task<Order?> AddAsync(CreateOrderBody orderBody, List<ProductConfiguration> configurations, float totalSum);
         Task<Order?> GetAsync(Guid id);
     }
 }

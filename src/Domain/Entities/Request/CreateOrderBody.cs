@@ -6,11 +6,16 @@ namespace istore_api.src.Domain.Entities.Request
     public class CreateOrderBody
     {
         public string Fullname { get; set; }
+
+        [Phone]
         public string Phone { get; set; }
+
+        [EmailAddress]
         public string Email { get; set; }
         
         [EnumDataType(typeof(CommunicationMethod))]
         public CommunicationMethod CommunicationMethod { get; set; }
+        
         public string? Comment { get; set; }
         public string? PromoCode { get; set; }
 
@@ -20,6 +25,7 @@ namespace istore_api.src.Domain.Entities.Request
     public class ConfigurationBody
     {
         public Guid ConfigurationId { get; set; }
+        [Range(1, int.MaxValue)]
         public int Count { get; set; }
     }
 }

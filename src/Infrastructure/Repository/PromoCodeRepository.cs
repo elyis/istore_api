@@ -57,6 +57,18 @@ namespace istore_api.src.Infrastructure.Repository
                 .ToListAsync();
         }
 
+        public async Task<bool> ActivePromocode(string code)
+        {
+            var promocode = await GetOrRemoveExpiredAsync(code);
+            if(promocode == null)
+                return false;
+
+            promocode.IsActive = true;
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
+
         public async Task<PromoCode?> GetOrRemoveExpiredAsync(string code)
         {
             var codeLowercase = code.ToLower();
