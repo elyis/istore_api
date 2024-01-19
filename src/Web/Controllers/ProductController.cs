@@ -12,27 +12,18 @@ namespace istore_api.src.Web.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly IProductCharacteristicRepository _productCharacteristicRepository;
         private readonly IDeviceModelRepository _deviceModelRepository; 
 
         public ProductController(
             IProductRepository productRepository,
+            IProductCharacteristicRepository productCharacteristicRepository,
             IDeviceModelRepository deviceModelRepository
         )
         {
             _productRepository = productRepository;
+            _productCharacteristicRepository = productCharacteristicRepository;
             _deviceModelRepository = deviceModelRepository;
-        }
-
-        [HttpGet("products/{patternName}")]
-        [SwaggerOperation("Получить все продукты")]
-        [SwaggerResponse(200, Type = typeof(IEnumerable<ProductBody>))]
-        public async Task<IActionResult> GetProductsByPatternName(string patternName)
-        {
-            if(string.IsNullOrEmpty(patternName))
-                return BadRequest("pattern is empty or null");
-
-            var products = await _productRepository.GetAllByPatternName(patternName);
-            return Ok(products);
         }
 
 
@@ -62,10 +53,21 @@ namespace istore_api.src.Web.Controllers
             return Ok(result);
         }
 
+        [HttpPatch("product-configuration")]
+        [SwaggerOperation("Обновить цену конфигурации")]
+        [SwaggerResponse(200)]
+        [SwaggerResponse(404, Description = "Конфигурация не найдена")]
+
+        public async Task<IActionResult> UpdateProductConfiguration(UpdateProductConfigurationBody updateProductBody)
+        {
+            var result = await _productCharacteristicRepository.UpdateProductConfiguration(updateProductBody);
+            return result == null ? NotFound() : Ok();
+        }
+
 
         [HttpPost("product")]
         [SwaggerOperation("Создать товар")]
-        [SwaggerResponse(200)]
+        [SwaggerResponse(200, Type = typeof(ProductBody))]
         [SwaggerResponse(400)]
 
         public async Task<IActionResult> CreateProduct(CreateProductBody productBody)
@@ -75,7 +77,7 @@ namespace istore_api.src.Web.Controllers
                 return BadRequest("device model name is not found");
 
             var result = await _productRepository.AddAsync(deviceModel, productBody);
-            return result == null ? BadRequest() : Ok();
+            return result == null ? BadRequest() : Ok(result.ToProductBody());
         }
 
         [HttpPut("product")]

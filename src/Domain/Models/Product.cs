@@ -14,7 +14,7 @@ namespace istore_api.src.Domain.Models
         public List<ProductCharacteristic> ProductCharacteristics { get; set; } = new();
         public List<ProductConfiguration> ProductConfigurations { get; set; } = new();
 
-        public List<OrderProducts> Orders { get; set; } = new();
+        public List<OrderProduct> Orders { get; set; } = new();
 
         public List<FilterCharacteristic> ToFilterCharacteristics()
         {

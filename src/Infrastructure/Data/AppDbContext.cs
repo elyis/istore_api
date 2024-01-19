@@ -23,7 +23,7 @@ namespace istore_api.src.Infrastructure.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductCharacteristic> ProductCharacteristics { get; set; }
         public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderProducts> OrderProducts { get; set; }
+        public DbSet<OrderProduct> OrderProducts { get; set; }
         public DbSet<PromoCode> PromoCodes { get; set; }
         public DbSet<BlogTopic> Blogs { get; set; } 
 
@@ -54,10 +54,10 @@ namespace istore_api.src.Infrastructure.Data
                 .HasForeignKey(e => e.DeviceModelName);
 
 
-            modelBuilder.Entity<OrderProducts>().HasKey(e => new
+            modelBuilder.Entity<OrderProduct>().HasKey(e => new
             {
                 e.OrderId,
-                e.ProductId
+                e.ProductConfigurationId
             });
 
 

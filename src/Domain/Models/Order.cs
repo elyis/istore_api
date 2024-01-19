@@ -10,6 +10,6 @@ namespace istore_api.src.Domain.Models
         public string? Comment { get; set; }
         public float TotalSum { get; set; }
 
-        public List<OrderProducts> Products { get; set; } = new();
+        public List<OrderProduct> Products { get; set; } = new();
     }
 }

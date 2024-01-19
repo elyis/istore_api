@@ -44,7 +44,7 @@ namespace istore_api.src.Web.Controllers
         }
         
 
-        [HttpPost("characteristics")]
+        [HttpGet("characteristics")]
         [SwaggerOperation("Получить список характеристик")]
         [SwaggerResponse(200, Type = typeof(IEnumerable<ProductCharacteristicBody>))]
 

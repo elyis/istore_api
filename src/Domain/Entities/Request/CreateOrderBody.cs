@@ -14,20 +14,12 @@ namespace istore_api.src.Domain.Entities.Request
         public string? Comment { get; set; }
         public string? PromoCode { get; set; }
 
-        public List<Purchase> Purchases { get; set; } = new();
+        public List<ConfigurationBody> Configurations { get; set; } = new();
     }
 
-    public class Purchase
+    public class ConfigurationBody
     {
-        public Guid ProductId { get; set; }
+        public Guid ConfigurationId { get; set; }
         public int Count { get; set; }
-        public string? Color { get; set; }
-        public List<CharacteristicPair> CharacteristicPairs { get; set; } = new();
-    }
-
-    public class CharacteristicPair
-    {
-        public string Name { get; set; }
-        public string Value { get; set; }
     }
 }
