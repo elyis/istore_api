@@ -39,7 +39,7 @@ namespace istore_api.src.Web.Controllers
 
         [HttpGet("promocode")]
         [SwaggerOperation("Проверить промокод")]
-        [SwaggerResponse(200)]
+        [SwaggerResponse(200, Type = typeof(PromoCodeBody))]
         [SwaggerResponse(400)]
 
         public async Task<IActionResult> GetCode([FromQuery] string code)
@@ -51,7 +51,7 @@ namespace istore_api.src.Web.Controllers
             if(promocode == null)
                 return BadRequest();
 
-            return promocode.IsActive == false ? Ok() : BadRequest();
+            return promocode.IsActive == false ? Ok(promocode.ToPromoCodeBody()) : BadRequest();
         }
 
     }

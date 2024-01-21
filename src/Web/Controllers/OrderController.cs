@@ -1,6 +1,9 @@
+using System.Text;
+using istore_api.src.App.IService;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
+using istore_api.src.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -13,16 +16,22 @@ namespace istore_api.src.Web.Controllers
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
         private readonly IPromoCodeRepository _promoCodeRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IEmailService _emailService;
 
         public OrderController(
             IOrderRepository orderRepository,
             IProductRepository productRepository,
-            IPromoCodeRepository promoCodeRepository
+            IPromoCodeRepository promoCodeRepository,
+            IUserRepository userRepository,
+            IEmailService emailService
         )
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _promoCodeRepository = promoCodeRepository;
+            _userRepository = userRepository;
+            _emailService = emailService;
         }
 
         [HttpPost("order")]
@@ -72,6 +81,7 @@ namespace istore_api.src.Web.Controllers
             var order = await _orderRepository.AddAsync(orderBody, configs, totalSum);
             if (order == null)
                 return BadRequest();
+            
 
             if(orderBody.PromoCode != null)
             {
@@ -80,7 +90,42 @@ namespace istore_api.src.Web.Controllers
                     return BadRequest();
             }
 
+            order = await _orderRepository.GetAsync(order.Id);
+            var admins = await _userRepository.GetAllByRole(UserRole.Admin);
+            var tasks = new List<Task<bool>>();
+
+            var orderMessage = CreateOrderMessage(order, orderBody.PromoCode);
+            foreach(var email in admins.Select(e => e.Email)){
+                var task = _emailService.SendMessage(email, "iStore", orderMessage);
+                tasks.Add(task);
+            }
+
+            await Task.WhenAll(tasks);
             return order == null ? BadRequest() : Ok();
+        }
+
+        private string CreateOrderMessage(Order order, string? promocode = null)
+        {
+            var buyerInfo = new StringBuilder();
+            buyerInfo.AppendLine($"Покупатель - {order.Fullname}");
+            buyerInfo.AppendLine($"Телефон - {order.Phone}");
+            if(order.Email != null)
+                buyerInfo.AppendLine($"Email - {order.Email}");
+            
+            buyerInfo.AppendLine($"Способ связи - {order.CommunicationMethod}");
+            if(!string.IsNullOrEmpty(order.Comment))
+                buyerInfo.AppendLine($"Комментарий - {order.Comment}");
+            
+            buyerInfo.AppendLine("\nТовары:\n");
+            var productsInfo = order.Products.Select(e => e.ToString());
+            foreach(var productInfo in productsInfo)
+                buyerInfo.AppendLine(productInfo);
+
+            buyerInfo.AppendLine($"Итоговая цена: {order.TotalSum} rub");
+            if(promocode != null)
+                buyerInfo.AppendLine($"Использованный промокод: {promocode}");
+
+            return buyerInfo.ToString();
         }
     }
 }

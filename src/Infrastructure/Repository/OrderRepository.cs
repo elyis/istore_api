@@ -2,6 +2,7 @@ using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
 using istore_api.src.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace istore_api.src.Infrastructure.Repository
 {
@@ -44,9 +45,15 @@ namespace istore_api.src.Infrastructure.Repository
             return order;
         }
 
-        public Task<Order?> GetAsync(Guid id)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<Order?> GetAsync(Guid id)
+            => await _context.Orders
+                .Include(e => e.Products)
+                    .ThenInclude(e => e.ProductConfiguration)
+                        .ThenInclude(e => e.Product)
+                .Include(e => e.Products)
+                    .ThenInclude(e => e.ProductConfiguration)
+                        .ThenInclude(e => e.Characteristics)
+                            .ThenInclude(e => e.ProductCharacteristic)
+                .FirstOrDefaultAsync(e => e.Id == id);
     }
 }

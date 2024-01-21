@@ -1,4 +1,5 @@
 using istore_api.src.Domain.Entities.Request;
+using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.Models;
 
 namespace istore_api.src.Domain.IRepository
@@ -11,5 +12,6 @@ namespace istore_api.src.Domain.IRepository
         Task<string?> UpdateTokenAsync(string refreshToken, Guid userId, TimeSpan? duration = null);
         Task<User?> GetByTokenAsync(string refreshTokenHash);
         Task<User?> UpdateProfileIconAsync(Guid userId, string filename);
+        Task<IEnumerable<User>> GetAllByRole(UserRole role);
     }
 }

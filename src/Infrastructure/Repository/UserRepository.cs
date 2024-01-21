@@ -1,4 +1,5 @@
 using istore_api.src.Domain.Entities.Request;
+using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
 using istore_api.src.Infrastructure.Data;
@@ -33,6 +34,11 @@ namespace istore_api.src.Infrastructure.Repository
             await _context.SaveChangesAsync();
             return result?.Entity;
         }
+
+        public async Task<IEnumerable<User>> GetAllByRole(UserRole role)
+            => await _context.Users
+                .Where(e => e.RoleName == role.ToString())
+                .ToListAsync();
 
         public async Task<User?> GetAsync(Guid id)
             => await _context.Users

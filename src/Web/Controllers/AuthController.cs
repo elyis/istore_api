@@ -27,7 +27,7 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(409, "Почта уже существует")]
 
 
-        [HttpPost("signup"), Authorize]
+        [HttpPost("signup")]
         public async Task<IActionResult> SignUpAsync(SignUpBody signUpBody)
         {
             string role = Enum.GetName(UserRole.Admin)!;
