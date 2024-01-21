@@ -18,13 +18,15 @@ namespace istore_api.src.Web.Controllers
         private readonly IPromoCodeRepository _promoCodeRepository;
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
+        private readonly ITelegramBotService _telegramBotService;
 
         public OrderController(
             IOrderRepository orderRepository,
             IProductRepository productRepository,
             IPromoCodeRepository promoCodeRepository,
             IUserRepository userRepository,
-            IEmailService emailService
+            IEmailService emailService,
+            ITelegramBotService telegramBotService
         )
         {
             _orderRepository = orderRepository;
@@ -32,6 +34,7 @@ namespace istore_api.src.Web.Controllers
             _promoCodeRepository = promoCodeRepository;
             _userRepository = userRepository;
             _emailService = emailService;
+            _telegramBotService = telegramBotService;
         }
 
         [HttpPost("order")]
@@ -47,7 +50,7 @@ namespace istore_api.src.Web.Controllers
             var configIds = orderBody.Configurations.Select(e => e.ConfigurationId).ToHashSet();
             var configs = (await _productRepository.GetAll(configIds)).ToList();
 
-            if(configs.Count != configIds.Count())
+            if(configs.Count != configIds.Count)
                 return BadRequest();
 
             float totalSum = orderBody.Configurations
@@ -91,15 +94,20 @@ namespace istore_api.src.Web.Controllers
             }
 
             order = await _orderRepository.GetAsync(order.Id);
-            var admins = await _userRepository.GetAllByRole(UserRole.Admin);
-            var tasks = new List<Task<bool>>();
+            var userInfos = await _telegramBotService.GetChatIdsAsync();
+            var admins = await _userRepository.GetAllOrUpdateByChatId(userInfos);
+            var adminChatIds = admins.Where(e => e.ChatId != null).Select(e => (long)e.ChatId);
 
+            var tasks = new List<Task<bool>>();
             var orderMessage = CreateOrderMessage(order, orderBody.PromoCode);
-            foreach(var email in admins.Select(e => e.Email)){
+            foreach(var email in admins.Select(e => e.Email))
+            {
                 var task = _emailService.SendMessage(email, "iStore", orderMessage);
                 tasks.Add(task);
             }
 
+
+            await _telegramBotService.SendMessageAsync(orderMessage, adminChatIds);
             await Task.WhenAll(tasks);
             return order == null ? BadRequest() : Ok();
         }

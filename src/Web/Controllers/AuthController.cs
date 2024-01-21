@@ -2,7 +2,7 @@ using istore_api.src.App.IService;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Shared;
 using istore_api.src.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
+using istore_api.src.Domain.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -13,11 +13,19 @@ namespace istore_api.src.Web.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ITelegramBotService _telegramBotService;
+        private readonly IUserRepository _userRepository;
 
 
-        public AuthController(IAuthService authService)
+        public AuthController(
+            IAuthService authService,
+            ITelegramBotService telegramBotService,
+            IUserRepository userRepository
+        )
         {
             _authService = authService;
+            _telegramBotService = telegramBotService;
+            _userRepository = userRepository;
         }
 
 
@@ -33,6 +41,16 @@ namespace istore_api.src.Web.Controllers
             string role = Enum.GetName(UserRole.Admin)!;
             var result = await _authService.SignUp(signUpBody, role);
             return result;
+        }
+
+        [SwaggerOperation("Добавить аккаунт пользователя")]
+        [SwaggerResponse(200)]
+        [HttpPost("tg")]
+        public async Task<IActionResult> TgRegistration()
+        {
+            var userInfos = await _telegramBotService.GetChatIdsAsync();
+            var admins = await _userRepository.GetAllOrUpdateByChatId(userInfos);
+            return Ok();
         }
 
 

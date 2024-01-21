@@ -27,6 +27,7 @@ namespace istore_api
         {
             var jwtSettings = _config.GetSection("JwtSettings").Get<JwtSettings>() ?? throw new Exception("jwt settings is empty");
             var emailServiceSettings = _config.GetSection(nameof(EmailServiceSettings)).Get<EmailServiceSettings>() ?? throw new Exception("email service settings is empty");
+            var telegramBotSettings = _config.GetSection(nameof(TelegramBotSettings)).Get<TelegramBotSettings>() ?? throw new Exception("telegram bot service settings is empty");
             var fileInspector = new ContentInspectorBuilder()
             {
                 Definitions = MimeDetective.Definitions.Default.All()
@@ -94,10 +95,12 @@ namespace istore_api
             services.AddSingleton<IJwtService, JwtService>();
             services.AddSingleton<IFileUploaderService, LocalFileUploaderService>();
             services.AddSingleton<IEmailService, EmailService>();
+            services.AddSingleton<ITelegramBotService, TelegramBotService>();
             
             services.AddSingleton(fileInspector);
             services.AddSingleton(jwtSettings);
             services.AddSingleton(emailServiceSettings);
+            services.AddSingleton(telegramBotSettings);
 
             services.Scan(scan =>
             {

@@ -21,7 +21,7 @@ namespace istore_api.src.Domain.Models
         public string? Token { get; set; }
         public DateTime? TokenValidBefore { get; set; }
         public string? Image { get; set; }
-        public int? ChatId { get; set; }
+        public long? ChatId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public ProfileBody ToProfileBody()

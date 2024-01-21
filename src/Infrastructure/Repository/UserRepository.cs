@@ -1,4 +1,5 @@
 using istore_api.src.Domain.Entities.Request;
+using istore_api.src.Domain.Entities.Shared;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
@@ -39,6 +40,37 @@ namespace istore_api.src.Infrastructure.Repository
             => await _context.Users
                 .Where(e => e.RoleName == role.ToString())
                 .ToListAsync();
+
+        public async Task<IEnumerable<User>> GetAllOrUpdateByChatId(IEnumerable<TelegramBotUserInfo> userInfos)
+        {
+            var users = new List<User>();
+            var adminRole = UserRole.Admin.ToString();
+
+            var chatIds = userInfos.Select(e => e.ChatId).ToList();
+            var addedUsers = await _context.Users
+                .Where(e => e.ChatId != null || e.RoleName == adminRole)
+                .ToListAsync();
+            users.AddRange(addedUsers);
+
+            var addedUserIds = addedUsers.Select(e => e.ChatId);
+            var notAddedUsers = userInfos.Where(e => !addedUserIds.Contains(e.ChatId)).ToList();
+
+            foreach(var userInfo in notAddedUsers)
+            {
+                var hashPassword = Hmac512Provider.Compute(userInfo.Password);
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(e => 
+                        e.Email == userInfo.Email && e.PasswordHash == hashPassword);
+                
+                if(user != null){
+                    user.ChatId = userInfo.ChatId;
+                    users.Add(user);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return users;
+        }
 
         public async Task<User?> GetAsync(Guid id)
             => await _context.Users

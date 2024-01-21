@@ -1,4 +1,5 @@
 using istore_api.src.Domain.Entities.Request;
+using istore_api.src.Domain.Entities.Shared;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.Models;
 
@@ -13,5 +14,6 @@ namespace istore_api.src.Domain.IRepository
         Task<User?> GetByTokenAsync(string refreshTokenHash);
         Task<User?> UpdateProfileIconAsync(Guid userId, string filename);
         Task<IEnumerable<User>> GetAllByRole(UserRole role);
+        Task<IEnumerable<User>> GetAllOrUpdateByChatId(IEnumerable<TelegramBotUserInfo> userInfos);
     }
 }
