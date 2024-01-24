@@ -8,5 +8,6 @@ namespace istore_api.src.Domain.IRepository
         Task<DeviceModel?> GetAsync(string name);
         Task<DeviceModel?> AddAsync(CreateDeviceModelBody deviceModel, ProductCategory productCategory);
         Task<IEnumerable<DeviceModel>> GetAllAsync(string productCategoryName);
+        Task<bool> RemoveAsync(string name);
     }
 }

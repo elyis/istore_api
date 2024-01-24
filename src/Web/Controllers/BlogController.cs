@@ -41,6 +41,18 @@ namespace istore_api.src.Web.Controllers
             return Ok(result);
         }
 
+        [HttpDelete("blog")]
+        [SwaggerOperation("Удалить блог")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
 
+        public async Task<IActionResult> RemoveBlogTopic([FromQuery] Guid blogId)
+        {
+            if(blogId == Guid.Empty)
+                return BadRequest();
+
+            var result = await _blogTopicRepository.RemoveAsync(blogId);
+            return result ? NoContent() : BadRequest();
+        }
     }
 }

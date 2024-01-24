@@ -15,6 +15,7 @@ namespace istore_api.src.Domain.Models
         {
             return new BlogTopicBody
             {
+                Id = Id,
                 Name = Name,
                 Description = Description,
                 ShortDescription = ShortDescription

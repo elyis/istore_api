@@ -57,5 +57,19 @@ namespace istore_api.src.Web.Controllers
             var result = characteristics.Select(e => e.ToProductCharacteristicBody());
             return Ok(result);
         }
+
+        [HttpDelete("characteristic")]
+        [SwaggerOperation("Удалить характеристику")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> RemoveProductCharacteristic([FromQuery] Guid characteristicId)
+        {
+            if(characteristicId == Guid.Empty)
+                return BadRequest("characteristicId is empty");
+
+            var result = await _productCharacteristicRepository.RemoveAsync(characteristicId);
+            return result ? NoContent() : BadRequest();
+        }
     }
 }

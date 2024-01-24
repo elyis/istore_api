@@ -44,5 +44,17 @@ namespace istore_api.src.Infrastructure.Repository
                 .Take(count)
                 .ToListAsync();
         }
+
+        public async Task<bool> RemoveAsync(Guid id)
+        {
+            var blog = await _context.Blogs.FindAsync(id);
+            if(blog == null)
+                return true;
+
+            _context.Blogs.Remove(blog);
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
     }
 }

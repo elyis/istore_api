@@ -9,5 +9,6 @@ namespace istore_api.src.Domain.IRepository
         Task<ProductCategory?> GetAsync(string name);
         Task<ProductCategory?> AddAsync(ProductCategoryBody categoryBody);
         Task<IEnumerable<ProductCategory>> GetAllAsync();
+        Task<bool> RemoveAsync(string name);
     }
 }

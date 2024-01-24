@@ -31,6 +31,18 @@ namespace istore_api.src.Infrastructure.Repository
             return product;
         }
 
+        public async Task<bool> RemoveAsync(Guid id)
+        {
+            var product = await GetAsync(id);
+            if(product == null)
+                return true;
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
 
         public async Task<IEnumerable<Product>> GetAllByPatternName(string pattern)
         {

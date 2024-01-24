@@ -39,7 +39,22 @@ namespace istore_api.src.Infrastructure.Repository
             => await _context.ProductCategories.FindAsync(id);
 
         public async Task<ProductCategory?> GetAsync(string name)
-            => await _context.ProductCategories
-                .FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLower());
+        {
+            var nameLowerCase = name.ToLower();
+            return await _context.ProductCategories
+                .FirstOrDefaultAsync(e => e.Name.ToLower() == nameLowerCase);
+        }
+
+        public async Task<bool> RemoveAsync(string name)
+        {
+            var productCategory = await GetAsync(name);
+            if(productCategory == null)
+                return true;
+
+            _context.ProductCategories.Remove(productCategory);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

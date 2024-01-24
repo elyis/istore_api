@@ -53,6 +53,9 @@ namespace istore_api.src.Web.Controllers
             if(configs.Count != configIds.Count)
                 return BadRequest();
 
+            if(configs.Any(e => e.Price == 0))
+                return BadRequest("The configuration price is not specified");
+
             float totalSum = orderBody.Configurations
                 .Sum(config => 
                     configs.First(e => e.Id == config.ConfigurationId).Price * config.Count);

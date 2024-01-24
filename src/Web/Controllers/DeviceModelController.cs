@@ -48,5 +48,19 @@ namespace istore_api.src.Web.Controllers
             var result = await _deviceModelRepository.AddAsync(deviceModel, productCategory);
             return result == null ? Conflict() : Ok();
         }
+
+        [HttpDelete("deviceModel")]
+        [SwaggerOperation("Удалить модель устройства")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> RemoveDeviceModel([FromQuery] string deviceModel)
+        {
+            if(string.IsNullOrEmpty(deviceModel))
+                return BadRequest();
+
+            var result = await _deviceModelRepository.RemoveAsync(deviceModel);
+            return result ? NoContent() : BadRequest();
+        }
     }
 }

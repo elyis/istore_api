@@ -68,15 +68,15 @@ namespace istore_api.src.Web.Controllers
                 
                 var productCharacteristics = filenameGroups
                 .Select(filenames => 
-                new ProductCharacteristic
-                {
-                    Name = colorString,
-                    Color = color,
-                    Hex = hex,
-                    Type = colorString,
-                    Values = string.Join(";", filenames),
-                    Product = product
-                })
+                    new ProductCharacteristic
+                    {
+                        Name = colorString,
+                        Color = color,
+                        Hex = hex,
+                        Type = colorString,
+                        Values = string.Join(";", filenames),
+                        Product = product
+                    })
                 .ToList();
                 
                 await _productCharacteristicRepository.AddImagesToProduct(productCharacteristics, productId);
@@ -93,6 +93,29 @@ namespace istore_api.src.Web.Controllers
 
         public async Task<IActionResult> GetProductIcon(string filename)
             => await GetIconAsync(Constants.localPathToProductIcons, filename);
+
+
+        [HttpDelete("productIcon")]
+        [SwaggerOperation("Удалить фото продуктов")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
+        [SwaggerResponse(404)]
+
+        public async Task<IActionResult> RemoveProductIcon(
+            [FromForm] Guid productId,
+            [FromForm] string filename
+        )
+        {
+            if(productId == Guid.Empty || string.IsNullOrEmpty(filename)) 
+                return BadRequest("the product ID is empty or no files are specified");
+
+            var result = await _productCharacteristicRepository.RemoveImageAsync(productId, filename);
+            if(!result)
+                return NotFound("product is not found");
+
+            var isRemoved = await _fileUploaderService.RemoveFileAsync(Constants.localPathToProductIcons, filename);
+            return isRemoved ? NoContent() : BadRequest();
+        }
     
 
         private async Task<IActionResult> UploadImagesAsync(string path, IFormFileCollection files)

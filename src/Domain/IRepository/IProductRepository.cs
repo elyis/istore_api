@@ -11,5 +11,6 @@ namespace istore_api.src.Domain.IRepository
         Task<Product?> AddAsync(DeviceModel deviceModel, CreateProductBody productBody);
         Task<Product?> UpdateAsync(UpdatingProductBody productBody);
         Task<IEnumerable<ProductConfiguration>> GetAll(IEnumerable<Guid> configIds);
+        Task<bool> RemoveAsync(Guid id);
     }
 }

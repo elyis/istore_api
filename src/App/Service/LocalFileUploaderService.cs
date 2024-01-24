@@ -33,6 +33,19 @@ namespace webApiTemplate.src.App.Service
             return filenames;
         }
 
+        public async Task<bool> RemoveFileAsync(string directoryPath, string filename)
+        {
+            if(string.IsNullOrEmpty(filename) && !Directory.Exists(directoryPath))
+                return false;
+
+            var fullpath = Path.Combine(directoryPath, filename);
+            if(!File.Exists(fullpath))
+                return false;
+
+            await Task.Run(() => File.Delete(fullpath));
+            return true;
+        }
+
         public async Task<byte[]?> GetStreamFileAsync(string directoryPath, string filename)
         {
             string fullPathToFile = Path.Combine(directoryPath, filename);

@@ -36,6 +36,83 @@ namespace istore_api.src.Infrastructure.Repository
             return productCharacteristic;
         }
 
+        public async Task<bool> RemoveAsync(Guid id)
+        {
+            var characteristic = await GetAsync(id);
+            if(characteristic == null)
+                return true;
+
+            _context.ProductCharacteristics.Remove(characteristic);
+            var configCharacteristics = await _context.ProductConfigCharacteristics
+                .Include(e => e.ProductConfiguration)
+                .Where(e => e.ProductCharacteristicId == characteristic.Id)
+                .ToListAsync();
+            var configurations = configCharacteristics.Select(e => e.ProductConfiguration);
+            var productId = configurations.First().ProductId;
+
+            _context.ProductConfigurations.RemoveRange(configurations);
+            await _context.SaveChangesAsync();
+            if(characteristic.Type == CharacteristicType.Text.ToString())
+                await CreateConfigurations(productId, false);
+
+            return true;
+        }
+
+        public async Task<ProductCharacteristic?> GetAsync(Guid id)
+            => await _context.ProductCharacteristics
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+        public async Task<bool> RemoveImageAsync(Guid productId, string filename)
+        {
+            var colorType = CharacteristicType.Color.ToString();
+            var textType = CharacteristicType.Text.ToString();
+
+            var productCharacteristic = await _context.ProductCharacteristics
+                .FirstOrDefaultAsync(e => 
+                    e.ProductId == productId && 
+                    e.Type == colorType &&
+                    EF.Functions.Like(e.Values, $"%{filename}%")
+                );
+
+            if(productCharacteristic == null)
+                return false;
+
+            var filenames = productCharacteristic.Values.Split(";").ToList();
+            if (filenames.Remove(filename))
+            {
+                productCharacteristic.Values = string.Join(";", filenames);
+                if(string.IsNullOrEmpty(productCharacteristic.Values))
+                {
+                    _context.ProductCharacteristics.Remove(productCharacteristic);
+                    var configCharacteristics = await _context.ProductConfigCharacteristics
+                        .Include(e => e.ProductConfiguration)
+                        .Where(e => e.ProductCharacteristicId == productCharacteristic.Id)
+                        .ToListAsync();
+
+                    var configurations = configCharacteristics.Select(e => e.ProductConfiguration);
+                    _context.ProductConfigurations.RemoveRange(configurations);
+                    await _context.SaveChangesAsync();
+
+                    var colorCharacteristic = await _context.ProductCharacteristics
+                        .FirstOrDefaultAsync(e => e.Type == colorType && e.ProductId == productId);
+                    if(colorCharacteristic == null)
+                    {
+                        var characteristics = await _context.ProductCharacteristics
+                            .Where(e => e.Type == textType && e.ProductId == productId)
+                            .ToListAsync();
+                        
+                        var product = await _context.Products.FindAsync(productId);
+                        await CreateConfigurationsByCharacteristics(characteristics, product);
+                    }
+                }
+                    
+                await _context.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+
         public async Task AddImagesToProduct(List<ProductCharacteristic> productCharacteristics, Guid productId)
         {
             var colorType = CharacteristicType.Color.ToString();
@@ -74,7 +151,7 @@ namespace istore_api.src.Infrastructure.Repository
 
                 var addedColorCharacteristic = addedCharacteristics.Where(e => e.Type == colorType);
                 if(addedColorCharacteristic.Any())
-                    await CreateConfigurations(productId, addedCharacteristics);
+                    await CreateConfigurationsByColorCharacteristics(productId, addedCharacteristics);
             }
 
             await _context.SaveChangesAsync();
@@ -93,7 +170,7 @@ namespace istore_api.src.Infrastructure.Repository
                 .Where(e => e.ProductId == productId)
                 .ToListAsync();
 
-        private async Task CreateConfigurations(Guid productId, List<ProductCharacteristic> colorCharacteristics)
+        private async Task CreateConfigurationsByColorCharacteristics(Guid productId, List<ProductCharacteristic> colorCharacteristics)
         {
             var product = await _context.Products.FirstOrDefaultAsync(e => e.Id == productId);
             if(product == null)
@@ -111,18 +188,18 @@ namespace istore_api.src.Infrastructure.Repository
 
             if(!colorCharacteristics.Any())
             {
-                await CreateProductConfigurations(textCharacteristics, product);
+                await CreateConfigurationsByCharacteristics(textCharacteristics, product);
                 return;
             }
 
             foreach(var colorCharacteristic in colorCharacteristics)
             {
                 var temp = textCharacteristics.Append(colorCharacteristic).ToList();
-                await CreateProductConfigurations(temp, product);
+                await CreateConfigurationsByCharacteristics(temp, product);
             }
         }
 
-        private async Task CreateProductConfigurations(List<ProductCharacteristic> characteristics, Product product)
+        private async Task CreateConfigurationsByCharacteristics(List<ProductCharacteristic> characteristics, Product product)
         {
             var combinations = GenerateCombinations(characteristics, 0, new List<ProductCharacteristic>());
             var productConfigurations = new List<ProductConfiguration>();
@@ -157,7 +234,10 @@ namespace istore_api.src.Infrastructure.Repository
         {
             if(isRemoveOldConfigurations)
             {
-                var configurations = await _context.ProductConfigurations.Where(e => e.ProductId == productId).ToListAsync();
+                var configurations = await _context.ProductConfigurations
+                    .Where(e => e.ProductId == productId)
+                    .ToListAsync();
+
                 _context.ProductConfigurations.RemoveRange(configurations);
                 await _context.SaveChangesAsync();
             }
@@ -168,7 +248,7 @@ namespace istore_api.src.Infrastructure.Repository
                     e.ProductId == productId
                 ).ToListAsync();
             
-            await CreateConfigurations(productId, colorCharacteristics);
+            await CreateConfigurationsByColorCharacteristics(productId, colorCharacteristics);
         }
 
         static List<List<ProductCharacteristic>> GenerateCombinations(List<ProductCharacteristic> characteristics, int index, List<ProductCharacteristic> currentCombination)

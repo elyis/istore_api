@@ -90,5 +90,20 @@ namespace istore_api.src.Web.Controllers
             var result = await _productRepository.UpdateAsync(productBody);
             return result == null ? Ok() : BadRequest("id not found");
         }
+
+        [HttpDelete("product")]
+        [SwaggerOperation("Удалить продукт")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> RemoveProductCharacteristic([FromQuery] Guid productId)
+        {
+            if(productId == Guid.Empty)
+                return BadRequest("productId is empty");
+
+            var result = await _productRepository.RemoveAsync(productId);
+            return result ? NoContent() : BadRequest();
+        }
+        
     }
 }

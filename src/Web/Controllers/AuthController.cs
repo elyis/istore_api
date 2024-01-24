@@ -43,16 +43,6 @@ namespace istore_api.src.Web.Controllers
             return result;
         }
 
-        [SwaggerOperation("Добавить аккаунт пользователя")]
-        [SwaggerResponse(200)]
-        [HttpPost("tg")]
-        public async Task<IActionResult> TgRegistration()
-        {
-            var userInfos = await _telegramBotService.GetChatIdsAsync();
-            var admins = await _userRepository.GetAllOrUpdateByChatId(userInfos);
-            return Ok();
-        }
-
 
 
         [SwaggerOperation("Авторизация")]

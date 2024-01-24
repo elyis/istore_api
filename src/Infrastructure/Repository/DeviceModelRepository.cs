@@ -39,7 +39,22 @@ namespace istore_api.src.Infrastructure.Repository
                 .ToListAsync();
 
         public async Task<DeviceModel?> GetAsync(string name)
-            => await _context.DeviceModels
-            .FirstOrDefaultAsync(e => e.Name.ToLower() == name.ToLower());
+        {
+            var nameLowerCase = name.ToLower();
+            return await _context.DeviceModels
+            .FirstOrDefaultAsync(e => e.Name.ToLower() == nameLowerCase);
+        }
+
+        public async Task<bool> RemoveAsync(string name)
+        {
+            var deviceModel = await GetAsync(name);
+            if(deviceModel == null)
+                return true;
+
+            _context.DeviceModels.Remove(deviceModel);
+            await _context.SaveChangesAsync();
+            
+            return true;
+        }
     }
 }

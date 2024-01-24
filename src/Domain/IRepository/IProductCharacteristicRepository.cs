@@ -6,10 +6,12 @@ namespace istore_api.src.Domain.IRepository
 {
     public interface IProductCharacteristicRepository
     {
+        Task<bool> RemoveImageAsync(Guid productId, string filename);
         Task<ProductCharacteristic?> AddAsync(Product product, CreateCharacteristicBody characteristicBody, CharacteristicType characteristicType);
         Task<ProductCharacteristic?> GetAsync(string name, Guid productId);
         Task<IEnumerable<ProductCharacteristic>> GetAll(Guid productId);
         Task AddImagesToProduct(List<ProductCharacteristic> productCharacteristics, Guid productId);
         Task<ProductConfiguration?> UpdateProductConfiguration(UpdateProductConfigurationBody updateProduct);
+        Task<bool> RemoveAsync(Guid id);
     }
 }

@@ -36,5 +36,20 @@ namespace istore_api.src.Web.Controllers
             var result = await _productCategoryRepository.AddAsync(categoryBody);
             return result == null ? Conflict() : Ok(result.ToProductCategoryBody());
         }
+
+
+        [HttpDelete("productCategory")]
+        [SwaggerOperation("Удалить категорию продукта")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> RemoveDeviceModel([FromQuery] string categoryName)
+        {
+            if(string.IsNullOrEmpty(categoryName))
+                return BadRequest();
+
+            var result = await _productCategoryRepository.RemoveAsync(categoryName);
+            return result ? NoContent() : BadRequest();
+        }
     }
 }
