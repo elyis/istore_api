@@ -23,11 +23,11 @@ namespace istore_api.src.Web.Controllers
         }
 
         [HttpGet("deviceModels")]
-        [SwaggerOperation("Получить все модели в категории")]
+        [SwaggerOperation("Получить все модели")]
         [SwaggerResponse(200, Type = typeof(IEnumerable<string>))]
         [SwaggerResponse(404)]
 
-        public async Task<IActionResult> GetDeviceModels([FromQuery] string categoryName)
+        public async Task<IActionResult> GetDeviceModels([FromQuery] string? categoryName)
         {
             var deviceModel = await _deviceModelRepository.GetAllAsync(categoryName);
             return deviceModel == null ? NotFound() : Ok(deviceModel.Select(e => e.Name)); 

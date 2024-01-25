@@ -33,10 +33,15 @@ namespace istore_api.src.Infrastructure.Repository
             return deviceModel;
         }
 
-        public async Task<IEnumerable<DeviceModel>> GetAllAsync(string productCategoryName)
-            => await _context.DeviceModels
-                .Where(e => e.ProductCategoryName.ToLower() == productCategoryName.ToLower())
-                .ToListAsync();
+        public async Task<IEnumerable<DeviceModel>> GetAllAsync(string? productCategoryName)
+        {
+            if(string.IsNullOrEmpty(productCategoryName))
+                return await _context.DeviceModels.ToListAsync();
+
+            return await _context.DeviceModels
+                    .Where(e => e.ProductCategoryName.ToLower() == productCategoryName.ToLower())
+                    .ToListAsync();
+        }
 
         public async Task<DeviceModel?> GetAsync(string name)
         {
