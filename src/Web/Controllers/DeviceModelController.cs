@@ -1,8 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.IRepository;
-using istore_api.src.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+
 
 namespace istore_api.src.Web.Controllers
 {
@@ -54,11 +55,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
 
-        public async Task<IActionResult> RemoveDeviceModel([FromQuery] string deviceModel)
+        public async Task<IActionResult> RemoveDeviceModel([FromQuery, Required] string deviceModel)
         {
-            if(string.IsNullOrEmpty(deviceModel))
-                return BadRequest();
-
             var result = await _deviceModelRepository.RemoveAsync(deviceModel);
             return result ? NoContent() : BadRequest();
         }

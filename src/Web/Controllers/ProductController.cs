@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.IRepository;
@@ -30,7 +31,7 @@ namespace istore_api.src.Web.Controllers
         [HttpGet("products")]
         [SwaggerOperation("Получить все продукты")]
         [SwaggerResponse(200, Type = typeof(IEnumerable<ProductBody>))]
-        public async Task<IActionResult> GetProductsByDeviceName([FromQuery] string deviceModel)
+        public async Task<IActionResult> GetProductsByDeviceName([FromQuery, Required] string deviceModel)
         {
             var products = new List<Product>();
             products = (await _productRepository.GetAll(deviceModel)).ToList();
@@ -96,11 +97,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
 
-        public async Task<IActionResult> RemoveProductCharacteristic([FromQuery] Guid productId)
+        public async Task<IActionResult> RemoveProductCharacteristic([FromQuery, Required] Guid productId)
         {
-            if(productId == Guid.Empty)
-                return BadRequest("productId is empty");
-
             var result = await _productRepository.RemoveAsync(productId);
             return result ? NoContent() : BadRequest();
         }

@@ -5,11 +5,14 @@ namespace istore_api.src.Domain.Entities.Request
 {
     public class CreateOrderBody
     {
+        [Required]
         public string Fullname { get; set; }
 
+        [Required]
         [Phone]
         public string Phone { get; set; }
 
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
         

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
@@ -30,7 +31,10 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(404)]
         [SwaggerResponse(409)]
 
-        public async Task<IActionResult> CreateCharacteristic(CreateCharacteristicBody characteristicBody, [FromQuery] Guid productId)
+        public async Task<IActionResult> CreateCharacteristic(
+            CreateCharacteristicBody characteristicBody, 
+            [FromQuery, Required] Guid productId
+        )
         {
             if (productId == Guid.Empty)
                 return BadRequest("productId is empty");
@@ -48,11 +52,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerOperation("Получить список характеристик")]
         [SwaggerResponse(200, Type = typeof(IEnumerable<ProductCharacteristicBody>))]
 
-        public async Task<IActionResult> GetCharacteristics(Guid productId)
+        public async Task<IActionResult> GetCharacteristics([Required] Guid productId)
         {
-            if(productId == Guid.Empty)
-                return BadRequest("productId is empty");
-
             var characteristics = await _productCharacteristicRepository.GetAll(productId);
             var result = characteristics.Select(e => e.ToProductCharacteristicBody());
             return Ok(result);
@@ -63,11 +64,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
 
-        public async Task<IActionResult> RemoveProductCharacteristic([FromQuery] Guid characteristicId)
+        public async Task<IActionResult> RemoveProductCharacteristic([FromQuery, Required] Guid characteristicId)
         {
-            if(characteristicId == Guid.Empty)
-                return BadRequest("characteristicId is empty");
-
             var result = await _productCharacteristicRepository.RemoveAsync(characteristicId);
             return result ? NoContent() : BadRequest();
         }

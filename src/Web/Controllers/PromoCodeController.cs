@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.IRepository;
@@ -42,11 +43,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(200, Type = typeof(PromoCodeBody))]
         [SwaggerResponse(400)]
 
-        public async Task<IActionResult> GetCode([FromQuery] string code)
+        public async Task<IActionResult> GetCode([FromQuery, Required] string code)
         {
-            if(string.IsNullOrEmpty(code))
-                return BadRequest();
-
             var promocode = await _promoCodeRepository.GetOrRemoveExpiredAsync(code);
             if(promocode == null)
                 return BadRequest();

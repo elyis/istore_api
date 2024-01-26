@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.IRepository;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,10 @@ namespace istore_api.src.Web.Controllers
     {
         private readonly IProductCategoryRepository _productCategoryRepository;
 
-        public ProductCategoryController(IProductCategoryRepository productCategoryRepository)
+        public ProductCategoryController
+        (
+            IProductCategoryRepository productCategoryRepository
+        )
         {
             _productCategoryRepository = productCategoryRepository;
         }
@@ -43,11 +47,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
 
-        public async Task<IActionResult> RemoveDeviceModel([FromQuery] string categoryName)
+        public async Task<IActionResult> RemoveDeviceModel([FromQuery, Required] string categoryName)
         {
-            if(string.IsNullOrEmpty(categoryName))
-                return BadRequest();
-
             var result = await _productCategoryRepository.RemoveAsync(categoryName);
             return result ? NoContent() : BadRequest();
         }

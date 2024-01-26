@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Entities.Shared;
@@ -46,11 +47,8 @@ namespace istore_api.src.Web.Controllers
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
 
-        public async Task<IActionResult> RemoveBlogTopic([FromQuery] Guid blogId)
+        public async Task<IActionResult> RemoveBlogTopic([FromQuery, Required] Guid blogId)
         {
-            if(blogId == Guid.Empty)
-                return BadRequest();
-
             var result = await _blogTopicRepository.RemoveAsync(blogId);
             return result ? NoContent() : BadRequest();
         }
