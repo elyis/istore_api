@@ -23,10 +23,11 @@ namespace istore_api.src.Domain.Models
             var textType = CharacteristicType.Text.ToString();
 
             var colorElems = ProductCharacteristics.Where(e => e.Type == colorType);
-            if(colorElems.Any())
+            if (colorElems.Any())
             {
                 var colorFilter = new FilterCharacteristic
                 {
+                    Id = colorElems.First().Id,
                     Type = CharacteristicType.Color,
                     Name = CharacteristicType.Color.ToString(),
                     Elems = colorElems.Select(e => e.ToProductCharacteristicElem()).ToList()
@@ -36,17 +37,18 @@ namespace istore_api.src.Domain.Models
             }
 
             var textCharacteristics = ProductCharacteristics.Where(e => e.Type == textType);
-            var textFilters = textCharacteristics.Select(e => 
+            var textFilters = textCharacteristics.Select(e =>
                 new FilterCharacteristic
                 {
+                    Id = e.Id,
                     Name = e.Name,
                     Type = CharacteristicType.Text,
-                    Elems = e.Values.Split(";").Select(e => 
+                    Elems = e.Values.Split(";").Select(e =>
                     new ProductCharacteristicElem
                     {
                         Color = null,
                         Hex = null,
-                        Values = new List<string> {e}
+                        Values = new List<string> { e }
                     })
                     .ToList()
                 });
@@ -58,6 +60,7 @@ namespace istore_api.src.Domain.Models
             => new()
             {
                 ProductId = Id,
+                Description = Description,
                 Name = Name,
                 Filters = ToFilterCharacteristics(),
                 ProductConfigurations = ProductConfigurations.Select(e => e.ToProductConfigCharacteristic()).ToList()
