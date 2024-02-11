@@ -46,10 +46,22 @@ namespace istore_api.src.Web.Controllers
         public async Task<IActionResult> GetCode([FromQuery, Required] string code)
         {
             var promocode = await _promoCodeRepository.GetOrRemoveExpiredAsync(code);
-            if(promocode == null)
+            if (promocode == null)
                 return BadRequest();
 
             return promocode.IsActive == false ? Ok(promocode.ToPromoCodeBody()) : BadRequest();
+        }
+
+
+        [HttpDelete("promocode")]
+        [SwaggerOperation("Удалить промокод")]
+        [SwaggerResponse(204)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> RemoveCode([FromQuery, Required] string code)
+        {
+            var isRemoved = await _promoCodeRepository.RemoveAsync(code);
+            return isRemoved ? NoContent() : BadRequest();
         }
 
     }

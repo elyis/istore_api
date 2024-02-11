@@ -14,14 +14,14 @@ namespace istore_api.src.Infrastructure.Repository
         {
             _context = context;
         }
-        
+
         public async Task<BlogTopic?> AddAsync(CreateBlogTopicBody blogBody)
         {
             var blog = new BlogTopic
             {
                 Name = blogBody.TopicName,
                 ShortDescription = blogBody.ShortDescription,
-                Description = blogBody.Description,                
+                Description = blogBody.Description,
             };
 
             blog = (await _context.Blogs.AddAsync(blog))?.Entity;
@@ -29,6 +29,9 @@ namespace istore_api.src.Infrastructure.Repository
 
             return blog;
         }
+
+        public async Task<BlogTopic?> GetAsync(Guid id)
+            => await _context.Blogs.FindAsync(id);
 
         public async Task<IEnumerable<BlogTopic>> GetAll(int count, int countSkipped, bool isDesc = true)
         {
@@ -48,12 +51,12 @@ namespace istore_api.src.Infrastructure.Repository
         public async Task<bool> RemoveAsync(Guid id)
         {
             var blog = await _context.Blogs.FindAsync(id);
-            if(blog == null)
+            if (blog == null)
                 return true;
 
             _context.Blogs.Remove(blog);
             await _context.SaveChangesAsync();
-            
+
             return true;
         }
     }

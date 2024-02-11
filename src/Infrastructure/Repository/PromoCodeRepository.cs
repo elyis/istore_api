@@ -49,6 +49,18 @@ namespace istore_api.src.Infrastructure.Repository
             return promoCode;
         }
 
+        public async Task<bool> RemoveAsync(string code)
+        {
+            var promocode = await GetOrRemoveExpiredAsync(code);
+            if (promocode == null)
+                return true;
+
+            _context.PromoCodes.Remove(promocode);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         public async Task<IEnumerable<PromoCode>> GetAllAsync(bool isActive)
         {
             var now = DateTime.UtcNow;
@@ -60,12 +72,12 @@ namespace istore_api.src.Infrastructure.Repository
         public async Task<bool> ActivePromocode(string code)
         {
             var promocode = await GetOrRemoveExpiredAsync(code);
-            if(promocode == null)
+            if (promocode == null)
                 return false;
 
             promocode.IsActive = true;
             await _context.SaveChangesAsync();
-            
+
             return true;
         }
 
@@ -77,12 +89,12 @@ namespace istore_api.src.Infrastructure.Repository
 
             var now = DateTime.UtcNow;
 
-            if(promoCode != null && (promoCode.DateExpiration < now || promoCode.IsActive))
+            if (promoCode != null && (promoCode.DateExpiration < now || promoCode.IsActive))
             {
                 _context.PromoCodes.Remove(promoCode);
                 await _context.SaveChangesAsync();
                 promoCode = null;
-            }    
+            }
 
             return promoCode;
         }

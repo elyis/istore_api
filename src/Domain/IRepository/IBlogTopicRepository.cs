@@ -7,6 +7,7 @@ namespace istore_api.src.Domain.IRepository
     {
         Task<IEnumerable<BlogTopic>> GetAll(int count, int countSkipped, bool isDesc = true);
         Task<bool> RemoveAsync(Guid id);
+        Task<BlogTopic?> GetAsync(Guid id);
         Task<BlogTopic?> AddAsync(CreateBlogTopicBody blogBody);
     }
 }

@@ -52,5 +52,17 @@ namespace istore_api.src.Web.Controllers
             var result = await _blogTopicRepository.RemoveAsync(blogId);
             return result ? NoContent() : BadRequest();
         }
+
+
+        [HttpGet("blog")]
+        [SwaggerOperation("Получить блог по id")]
+        [SwaggerResponse(200, Type = typeof(BlogTopicBody))]
+        [SwaggerResponse(404)]
+
+        public async Task<IActionResult> GetTopic([FromQuery, Required] Guid blogId)
+        {
+            var result = await _blogTopicRepository.GetAsync(blogId);
+            return result == null ? NotFound() : Ok(result.ToBlogTopicBody());
+        }
     }
 }
