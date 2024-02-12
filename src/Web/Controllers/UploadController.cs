@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MimeDetective;
 using Swashbuckle.AspNetCore.Annotations;
@@ -35,39 +36,39 @@ namespace istore_api.src.Web.Controllers
         }
 
 
-        [HttpPost("productIcon")]
+        [HttpPost("productIcon"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> UploadIcons(
-            [FromForm] Guid productId, 
+            [FromForm] Guid productId,
             [FromForm] string hex,
-            [FromForm] string color, 
+            [FromForm] string color,
             [FromForm] IFormFileCollection formFiles
         )
         {
-            if(productId == Guid.Empty)
+            if (productId == Guid.Empty)
                 return BadRequest("productId is not found");
 
-            if(string.IsNullOrEmpty(color) || string.IsNullOrEmpty(hex))
+            if (string.IsNullOrEmpty(color) || string.IsNullOrEmpty(hex))
                 return BadRequest("color or hex field is empty");
 
-            if(!IsHexFormat(hex))
+            if (!IsHexFormat(hex))
                 return BadRequest("hex format looks wrong");
 
             var files = Request.Form.Files;
-            if(files.Count == 0)
+            if (files.Count == 0)
                 return BadRequest("the files are not attached");
 
             var product = await _productRepository.GetAsync(productId);
-            if(product == null)
+            if (product == null)
                 return BadRequest("id is not found");
 
             var result = await UploadImagesAsync(Constants.localPathToProductIcons, files);
-            if(result is OkObjectResult objectResult)
+            if (result is OkObjectResult objectResult)
             {
                 var filenameGroups = (List<string>[])objectResult.Value!;
                 var colorString = CharacteristicType.Color.ToString();
-                
+
                 var productCharacteristics = filenameGroups
-                .Select(filenames => 
+                .Select(filenames =>
                     new ProductCharacteristic
                     {
                         Name = colorString,
@@ -78,7 +79,7 @@ namespace istore_api.src.Web.Controllers
                         Product = product
                     })
                 .ToList();
-                
+
                 await _productCharacteristicRepository.AddImagesToProduct(productCharacteristics, productId);
                 return Ok();
             }
@@ -95,7 +96,7 @@ namespace istore_api.src.Web.Controllers
             => await GetIconAsync(Constants.localPathToProductIcons, filename);
 
 
-        [HttpDelete("productIcon")]
+        [HttpDelete("productIcon"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Удалить фото продуктов")]
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
@@ -106,26 +107,26 @@ namespace istore_api.src.Web.Controllers
             [FromForm] string filename
         )
         {
-            if(productId == Guid.Empty || string.IsNullOrEmpty(filename)) 
+            if (productId == Guid.Empty || string.IsNullOrEmpty(filename))
                 return BadRequest("the product ID is empty or no files are specified");
 
             var result = await _productCharacteristicRepository.RemoveImageAsync(productId, filename);
-            if(!result)
+            if (!result)
                 return NotFound("product is not found");
 
             var isRemoved = await _fileUploaderService.RemoveFileAsync(Constants.localPathToProductIcons, filename);
             return isRemoved ? NoContent() : BadRequest();
         }
-    
+
 
         private async Task<IActionResult> UploadImagesAsync(string path, IFormFileCollection files)
         {
-            if(files.Count == 0)
+            if (files.Count == 0)
                 return BadRequest("No file uploaded");
 
             var streams = new List<(Stream stream, List<string> fileExtension)>();
 
-            for(int i = 0; i < files.Count; i++)
+            for (int i = 0; i < files.Count; i++)
             {
                 var stream = files[i].OpenReadStream();
                 var mimeTypes = _contentInspector.Inspect(stream).ByMimeType();
@@ -143,7 +144,7 @@ namespace istore_api.src.Web.Controllers
             }
 
             var tasks = new List<Task<List<string>>>();
-            foreach(var (stream, fileExtension) in streams)
+            foreach (var (stream, fileExtension) in streams)
             {
                 var task = _fileUploaderService.UploadFileAsync(path, stream, fileExtension);
                 tasks.Add(task);

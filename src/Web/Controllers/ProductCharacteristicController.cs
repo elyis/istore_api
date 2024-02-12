@@ -3,6 +3,7 @@ using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -25,14 +26,14 @@ namespace istore_api.src.Web.Controllers
         }
 
 
-        [HttpPost("characteristic")]
+        [HttpPost("characteristic"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Создать характеристику товара")]
         [SwaggerResponse(200)]
         [SwaggerResponse(404)]
         [SwaggerResponse(409)]
 
         public async Task<IActionResult> CreateCharacteristic(
-            CreateCharacteristicBody characteristicBody, 
+            CreateCharacteristicBody characteristicBody,
             [FromQuery, Required] Guid productId
         )
         {
@@ -40,13 +41,13 @@ namespace istore_api.src.Web.Controllers
                 return BadRequest("productId is empty");
 
             var product = await _productRepository.GetAsync(productId);
-            if(product == null)
+            if (product == null)
                 return NotFound("productId not found");
 
             var result = await _productCharacteristicRepository.AddAsync(product, characteristicBody, CharacteristicType.Text);
             return result == null ? Conflict() : Ok();
         }
-        
+
 
         [HttpGet("characteristics")]
         [SwaggerOperation("Получить список характеристик")]
@@ -59,7 +60,7 @@ namespace istore_api.src.Web.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("characteristic")]
+        [HttpDelete("characteristic"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Удалить характеристику")]
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]

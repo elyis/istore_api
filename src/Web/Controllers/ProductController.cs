@@ -3,6 +3,7 @@ using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -14,7 +15,7 @@ namespace istore_api.src.Web.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly IProductCharacteristicRepository _productCharacteristicRepository;
-        private readonly IDeviceModelRepository _deviceModelRepository; 
+        private readonly IDeviceModelRepository _deviceModelRepository;
 
         public ProductController(
             IProductRepository productRepository,
@@ -35,12 +36,12 @@ namespace istore_api.src.Web.Controllers
         {
             var products = new List<Product>();
             products = (await _productRepository.GetAll(deviceModel)).ToList();
-            if(!products.Any())
+            if (!products.Any())
             {
                 var deviceModels = (await _deviceModelRepository.GetAllAsync(deviceModel)).Select(e => e.Name);
-                
+
                 var tasks = new List<Task<IEnumerable<Product>>>();
-                foreach(var model in deviceModels)
+                foreach (var model in deviceModels)
                 {
                     var task = _productRepository.GetAll(model);
                     tasks.Add(task);
@@ -54,7 +55,7 @@ namespace istore_api.src.Web.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("product-configuration")]
+        [HttpPatch("product-configuration"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Обновить цену конфигурации")]
         [SwaggerResponse(200)]
         [SwaggerResponse(404, Description = "Конфигурация не найдена")]
@@ -66,7 +67,7 @@ namespace istore_api.src.Web.Controllers
         }
 
 
-        [HttpPost("product")]
+        [HttpPost("product"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Создать товар")]
         [SwaggerResponse(200, Type = typeof(ProductBody))]
         [SwaggerResponse(400)]
@@ -74,14 +75,14 @@ namespace istore_api.src.Web.Controllers
         public async Task<IActionResult> CreateProduct(CreateProductBody productBody)
         {
             var deviceModel = await _deviceModelRepository.GetAsync(productBody.ModelName);
-            if(deviceModel == null)
+            if (deviceModel == null)
                 return BadRequest("device model name is not found");
 
             var result = await _productRepository.AddAsync(deviceModel, productBody);
             return result == null ? BadRequest() : Ok(result.ToProductBody());
         }
 
-        [HttpPut("product")]
+        [HttpPut("product"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Изменить товар")]
         [SwaggerResponse(200)]
         [SwaggerResponse(400)]
@@ -92,7 +93,7 @@ namespace istore_api.src.Web.Controllers
             return result == null ? Ok() : BadRequest("id not found");
         }
 
-        [HttpDelete("product")]
+        [HttpDelete("product"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Удалить продукт")]
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]
@@ -102,6 +103,6 @@ namespace istore_api.src.Web.Controllers
             var result = await _productRepository.RemoveAsync(productId);
             return result ? NoContent() : BadRequest();
         }
-        
+
     }
 }

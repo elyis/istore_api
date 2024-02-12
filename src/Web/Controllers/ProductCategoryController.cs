@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -30,7 +31,7 @@ namespace istore_api.src.Web.Controllers
             return Ok(result);
         }
 
-        [HttpPost("productCategory")]
+        [HttpPost("productCategory"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Создать категорию")]
         [SwaggerResponse(200)]
         [SwaggerResponse(409)]
@@ -42,7 +43,7 @@ namespace istore_api.src.Web.Controllers
         }
 
 
-        [HttpDelete("productCategory")]
+        [HttpDelete("productCategory"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Удалить категорию продукта")]
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]

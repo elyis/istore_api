@@ -3,6 +3,7 @@ using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Entities.Shared;
 using istore_api.src.Domain.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -20,7 +21,7 @@ namespace istore_api.src.Web.Controllers
         }
 
 
-        [HttpPost("blog")]
+        [HttpPost("blog"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Создать тему блога")]
         [SwaggerResponse(200)]
         [SwaggerResponse(409)]
@@ -42,7 +43,7 @@ namespace istore_api.src.Web.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("blog")]
+        [HttpDelete("blog"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Удалить блог")]
         [SwaggerResponse(204)]
         [SwaggerResponse(400)]

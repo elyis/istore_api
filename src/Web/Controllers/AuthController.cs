@@ -2,7 +2,7 @@ using istore_api.src.App.IService;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Shared;
 using istore_api.src.Domain.Enums;
-using istore_api.src.Domain.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -13,19 +13,13 @@ namespace istore_api.src.Web.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly ITelegramBotService _telegramBotService;
-        private readonly IUserRepository _userRepository;
 
 
         public AuthController(
-            IAuthService authService,
-            ITelegramBotService telegramBotService,
-            IUserRepository userRepository
+            IAuthService authService
         )
         {
             _authService = authService;
-            _telegramBotService = telegramBotService;
-            _userRepository = userRepository;
         }
 
 
