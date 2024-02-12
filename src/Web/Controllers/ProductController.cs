@@ -90,7 +90,7 @@ namespace istore_api.src.Web.Controllers
         public async Task<IActionResult> UpdateProduct(UpdatingProductBody productBody)
         {
             var result = await _productRepository.UpdateAsync(productBody);
-            return result == null ? Ok() : BadRequest("id not found");
+            return result == null ? BadRequest("id not found") : Ok();
         }
 
         [HttpDelete("product"), Authorize(Roles = "Admin")]
