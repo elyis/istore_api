@@ -2,7 +2,6 @@ using istore_api.src.App.IService;
 using istore_api.src.Domain.Entities.Request;
 using istore_api.src.Domain.Entities.Shared;
 using istore_api.src.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 

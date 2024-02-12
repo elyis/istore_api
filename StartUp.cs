@@ -87,6 +87,15 @@ namespace istore_api
                     Description = "Api",
                 });
 
+                options.AddSecurityDefinition(name: "Bearer", securityScheme: new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Description = "Enter the Bearer Authorization string as following: `Bearer Generated-JWT-Token`",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
                 options.EnableAnnotations();
             })
             .AddSwaggerGenNewtonsoftSupport();
@@ -96,7 +105,7 @@ namespace istore_api
             services.AddSingleton<IFileUploaderService, LocalFileUploaderService>();
             services.AddSingleton<IEmailService, EmailService>();
             services.AddSingleton<ITelegramBotService, TelegramBotService>();
-            
+
             services.AddSingleton(fileInspector);
             services.AddSingleton(jwtSettings);
             services.AddSingleton(emailServiceSettings);
