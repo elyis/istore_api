@@ -2,13 +2,17 @@ using System.Text;
 using istore_api.src.App.IService;
 using istore_api.src.App.Service;
 using istore_api.src.Domain.Entities.Config;
+using istore_api.src.Domain.Enums;
+using istore_api.src.Domain.Models;
 using istore_api.src.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MimeDetective;
 using webApiTemplate.src.App.IService;
+using webApiTemplate.src.App.Provider;
 using webApiTemplate.src.App.Service;
 using webApiTemplate.src.Domain.Entities.Config;
 
@@ -96,6 +100,25 @@ namespace istore_api
                     Scheme = "Bearer"
                 });
 
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Name = "Authorization",
+                            Type = SecuritySchemeType.ApiKey,
+                            In = ParameterLocation.Header,
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Authorization"
+                            },
+                        },
+                        new string[] {}
+                    }
+                }
+    );
+
                 options.EnableAnnotations();
             })
             .AddSwaggerGenNewtonsoftSupport();
@@ -140,6 +163,8 @@ namespace istore_api
                     .AsImplementedInterfaces()
                     .WithScopedLifetime();
             });
+
+            InitDatabase();
         }
 
         public void Configure(WebApplication app, IWebHostEnvironment env)
@@ -161,6 +186,69 @@ namespace istore_api
 
             app.MapControllers();
             app.Run();
+        }
+
+        public void InitDatabase()
+        {
+            var context = new AppDbContext(new DbContextOptions<AppDbContext>(), _config);
+            var adminEmail = "itismymessagebox@mail.ru";
+
+            var admin = context.Users.FirstOrDefault(e => e.Email == adminEmail);
+            if (admin == null)
+            {
+                admin = new User
+                {
+                    Email = adminEmail,
+                    RoleName = UserRole.Admin.ToString(),
+                    PasswordHash = Hmac512Provider.Compute("qweasdZXC!1")
+                };
+                context.Users.Add(admin);
+
+                var categories = new List<ProductCategory>{
+                    new()
+                    {
+                        Name = "Iphone"
+                    },
+
+                    new()
+                    {
+                        Name = "AirPods"
+                    },
+
+                    new()
+                    {
+                        Name = "Watch"
+                    },
+
+                    new()
+                    {
+                        Name = "Mac"
+                    },
+
+                    new()
+                    {
+                        Name = "iPad"
+                    },
+
+                    new()
+                    {
+                        Name = "accessories"
+                    },
+
+                    new()
+                    {
+                        Name = "consoles"
+                    },
+
+                    new()
+                    {
+                        Name = "Dyson"
+                    },
+                };
+
+                context.ProductCategories.AddRange(categories);
+                context.SaveChanges();
+            }
         }
     }
 }
