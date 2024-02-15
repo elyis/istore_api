@@ -9,6 +9,7 @@ namespace istore_api.src.Domain.Models
         public string CommunicationMethod { get; set; }
         public string? Comment { get; set; }
         public float TotalSum { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public List<OrderProduct> Products { get; set; } = new();
     }

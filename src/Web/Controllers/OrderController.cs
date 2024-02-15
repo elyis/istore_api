@@ -1,9 +1,11 @@
 using System.Text;
 using istore_api.src.App.IService;
 using istore_api.src.Domain.Entities.Request;
+using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -44,39 +46,39 @@ namespace istore_api.src.Web.Controllers
 
         public async Task<IActionResult> CreateOrder(CreateOrderBody orderBody)
         {
-            if(!orderBody.Configurations.Any())
+            if (!orderBody.Configurations.Any())
                 return BadRequest("empty configuration");
 
             var configIds = orderBody.Configurations.Select(e => e.ConfigurationId).ToHashSet();
             var configs = (await _productRepository.GetAll(configIds)).ToList();
 
-            if(configs.Count != configIds.Count)
+            if (configs.Count != configIds.Count)
                 return BadRequest();
 
-            if(configs.Any(e => e.Price == 0))
+            if (configs.Any(e => e.Price == 0))
                 return BadRequest("The configuration price is not specified");
 
             float totalSum = orderBody.Configurations
-                .Sum(config => 
+                .Sum(config =>
                     configs.First(e => e.Id == config.ConfigurationId).Price * config.Count);
 
 
-            if(orderBody.PromoCode != null)
+            if (orderBody.PromoCode != null)
             {
                 var promocode = await _promoCodeRepository.GetOrRemoveExpiredAsync(orderBody.PromoCode);
-                if(promocode == null)
+                if (promocode == null)
                     return BadRequest("promocode is not found");
 
-                else if(promocode != null && !promocode.IsActive)
+                else if (promocode != null && !promocode.IsActive)
                 {
                     var promocodeType = Enum.Parse<PromoCodeType>(promocode.Type);
 
-                    if(promocodeType == PromoCodeType.DiscountAmount)
+                    if (promocodeType == PromoCodeType.DiscountAmount)
                     {
                         totalSum -= promocode.Value;
                         totalSum = Math.Max(totalSum, 0);
                     }
-                    else if(promocodeType == PromoCodeType.DiscountPercentage)
+                    else if (promocodeType == PromoCodeType.DiscountPercentage)
                         totalSum -= totalSum / promocode.Value;
                 }
 
@@ -87,12 +89,12 @@ namespace istore_api.src.Web.Controllers
             var order = await _orderRepository.AddAsync(orderBody, configs, totalSum);
             if (order == null)
                 return BadRequest();
-            
 
-            if(orderBody.PromoCode != null)
+
+            if (orderBody.PromoCode != null)
             {
                 var result = await _promoCodeRepository.ActivePromocode(orderBody.PromoCode);
-                if(result == false)
+                if (result == false)
                     return BadRequest();
             }
 
@@ -103,7 +105,7 @@ namespace istore_api.src.Web.Controllers
 
             var tasks = new List<Task<bool>>();
             var orderMessage = CreateOrderMessage(order, orderBody.PromoCode);
-            foreach(var email in admins.Select(e => e.Email))
+            foreach (var email in admins.Select(e => e.Email))
             {
                 var task = _emailService.SendMessage(email, "iStore", orderMessage);
                 tasks.Add(task);
@@ -115,25 +117,35 @@ namespace istore_api.src.Web.Controllers
             return order == null ? BadRequest() : Ok();
         }
 
+        [HttpPost("analytic")]
+        [SwaggerOperation("Получить аналитику по заказам")]
+        [SwaggerResponse(200, Type = typeof(AnalyticBody))]
+
+        public async Task<IActionResult> GetAnalyticBody()
+        {
+            var result = await _orderRepository.GetAnalyticBody();
+            return Ok(result);
+        }
+
         private string CreateOrderMessage(Order order, string? promocode = null)
         {
             var buyerInfo = new StringBuilder();
             buyerInfo.AppendLine($"Покупатель - {order.Fullname}");
             buyerInfo.AppendLine($"Телефон - {order.Phone}");
-            if(order.Email != null)
+            if (order.Email != null)
                 buyerInfo.AppendLine($"Email - {order.Email}");
-            
+
             buyerInfo.AppendLine($"Способ связи - {order.CommunicationMethod}");
-            if(!string.IsNullOrEmpty(order.Comment))
+            if (!string.IsNullOrEmpty(order.Comment))
                 buyerInfo.AppendLine($"Комментарий - {order.Comment}");
-            
+
             buyerInfo.AppendLine("\nТовары:\n");
             var productsInfo = order.Products.Select(e => e.ToString());
-            foreach(var productInfo in productsInfo)
+            foreach (var productInfo in productsInfo)
                 buyerInfo.AppendLine(productInfo);
 
             buyerInfo.AppendLine($"Итоговая цена: {order.TotalSum} rub");
-            if(promocode != null)
+            if (promocode != null)
                 buyerInfo.AppendLine($"Использованный промокод: {promocode}");
 
             return buyerInfo.ToString();

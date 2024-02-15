@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using istore_api.src.Domain.Entities.Shared;
-using istore_api.src.Domain.Models;
 using Microsoft.IdentityModel.Tokens;
 using webApiTemplate.src.App.IService;
 using webApiTemplate.src.Domain.Entities.Config;
