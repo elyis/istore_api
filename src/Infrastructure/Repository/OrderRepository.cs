@@ -69,6 +69,7 @@ namespace istore_api.src.Infrastructure.Repository
 
             var analyticBody = new AnalyticBody
             {
+                CountOrders = orders.Count,
                 ProductAnalytics = temp,
                 AverageSum = orders.Any() ? orders.Average(e => e.TotalSum) : 0,
                 CountPurchasedGoods = temp.Sum(e => e.Count),
