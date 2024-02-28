@@ -21,6 +21,7 @@ namespace istore_api.src.Web.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
         private readonly ITelegramBotService _telegramBotService;
+        private readonly ILogger<OrderController> _logger;
 
         public OrderController(
             IOrderRepository orderRepository,
@@ -28,7 +29,8 @@ namespace istore_api.src.Web.Controllers
             IPromoCodeRepository promoCodeRepository,
             IUserRepository userRepository,
             IEmailService emailService,
-            ITelegramBotService telegramBotService
+            ITelegramBotService telegramBotService,
+            ILogger<OrderController> logger
         )
         {
             _orderRepository = orderRepository;
@@ -37,6 +39,7 @@ namespace istore_api.src.Web.Controllers
             _userRepository = userRepository;
             _emailService = emailService;
             _telegramBotService = telegramBotService;
+            _logger = logger;
         }
 
         [HttpPost("order")]
@@ -46,14 +49,19 @@ namespace istore_api.src.Web.Controllers
 
         public async Task<IActionResult> CreateOrder(CreateOrderBody orderBody)
         {
+            _logger.LogError("1");
             if (!orderBody.Configurations.Any())
                 return BadRequest("empty configuration");
 
+
+            _logger.LogError("2");
             var configIds = orderBody.Configurations.Select(e => e.ConfigurationId).ToHashSet();
             var configs = (await _productRepository.GetAll(configIds)).ToList();
 
             if (configs.Count != configIds.Count)
                 return BadRequest();
+
+            _logger.LogError("3");
 
             if (configs.Any(e => e.Price == 0))
                 return BadRequest("The configuration price is not specified");

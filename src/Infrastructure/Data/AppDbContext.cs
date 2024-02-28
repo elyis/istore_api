@@ -9,9 +9,9 @@ namespace istore_api.src.Infrastructure.Data
         private readonly IConfiguration _config;
 
         public AppDbContext(
-            DbContextOptions<AppDbContext> options, 
+            DbContextOptions<AppDbContext> options,
             IConfiguration config
-        ) 
+        )
         : base(options)
         {
             _config = config;
@@ -25,23 +25,23 @@ namespace istore_api.src.Infrastructure.Data
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderProduct> OrderProducts { get; set; }
         public DbSet<PromoCode> PromoCodes { get; set; }
-        public DbSet<BlogTopic> Blogs { get; set; } 
+        public DbSet<BlogTopic> Blogs { get; set; }
 
         public DbSet<ProductConfiguration> ProductConfigurations { get; set; }
         public DbSet<ProductConfigCharacteristic> ProductConfigCharacteristics { get; set; }
-        
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var connectionString = _config.GetConnectionString("Default");
-            optionsBuilder.UseSqlite(connectionString);
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+
+            optionsBuilder.UseNpgsql(connectionString);
             optionsBuilder.EnableSensitiveDataLogging();
             base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<DeviceModel>()
                 .HasOne(e => e.ProductCategory)
@@ -66,6 +66,7 @@ namespace istore_api.src.Infrastructure.Data
                 e.ProductCharacteristicId,
                 e.ProductConfigurationId
             });
+            base.OnModelCreating(modelBuilder);
         }
     }
 

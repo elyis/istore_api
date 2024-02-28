@@ -10,7 +10,7 @@ namespace istore_api.src.Domain.IRepository
         Task<ProductCharacteristic?> AddAsync(Product product, CreateCharacteristicBody characteristicBody, CharacteristicType characteristicType);
         Task<ProductCharacteristic?> GetAsync(string name, Guid productId);
         Task<IEnumerable<ProductCharacteristic>> GetAll(Guid productId);
-        Task AddImagesToProduct(List<ProductCharacteristic> productCharacteristics, Guid productId);
+        Task AddImagesToProduct(ProductCharacteristic productCharacteristic, Guid productId);
         Task<ProductConfiguration?> UpdateProductConfiguration(UpdateProductConfigurationBody updateProduct);
         Task<bool> RemoveAsync(Guid id);
     }

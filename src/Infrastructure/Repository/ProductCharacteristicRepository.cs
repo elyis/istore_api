@@ -19,7 +19,7 @@ namespace istore_api.src.Infrastructure.Repository
         public async Task<ProductCharacteristic?> AddAsync(Product product, CreateCharacteristicBody characteristicBody, CharacteristicType characteristicType)
         {
             var productCharacteristic = await GetAsync(characteristicBody.Name, product.Id);
-            if(productCharacteristic != null)
+            if (productCharacteristic != null)
                 return null;
 
             productCharacteristic = new ProductCharacteristic
@@ -39,7 +39,7 @@ namespace istore_api.src.Infrastructure.Repository
         public async Task<bool> RemoveAsync(Guid id)
         {
             var characteristic = await GetAsync(id);
-            if(characteristic == null)
+            if (characteristic == null)
                 return true;
 
             _context.ProductCharacteristics.Remove(characteristic);
@@ -52,7 +52,7 @@ namespace istore_api.src.Infrastructure.Repository
 
             _context.ProductConfigurations.RemoveRange(configurations);
             await _context.SaveChangesAsync();
-            if(characteristic.Type == CharacteristicType.Text.ToString())
+            if (characteristic.Type == CharacteristicType.Text.ToString())
                 await CreateConfigurations(productId, false);
 
             return true;
@@ -68,20 +68,20 @@ namespace istore_api.src.Infrastructure.Repository
             var textType = CharacteristicType.Text.ToString();
 
             var productCharacteristic = await _context.ProductCharacteristics
-                .FirstOrDefaultAsync(e => 
-                    e.ProductId == productId && 
+                .FirstOrDefaultAsync(e =>
+                    e.ProductId == productId &&
                     e.Type == colorType &&
                     EF.Functions.Like(e.Values, $"%{filename}%")
                 );
 
-            if(productCharacteristic == null)
+            if (productCharacteristic == null)
                 return false;
 
             var filenames = productCharacteristic.Values.Split(";").ToList();
             if (filenames.Remove(filename))
             {
                 productCharacteristic.Values = string.Join(";", filenames);
-                if(string.IsNullOrEmpty(productCharacteristic.Values))
+                if (string.IsNullOrEmpty(productCharacteristic.Values))
                 {
                     _context.ProductCharacteristics.Remove(productCharacteristic);
                     var configCharacteristics = await _context.ProductConfigCharacteristics
@@ -95,17 +95,17 @@ namespace istore_api.src.Infrastructure.Repository
 
                     var colorCharacteristic = await _context.ProductCharacteristics
                         .FirstOrDefaultAsync(e => e.Type == colorType && e.ProductId == productId);
-                    if(colorCharacteristic == null)
+                    if (colorCharacteristic == null)
                     {
                         var characteristics = await _context.ProductCharacteristics
                             .Where(e => e.Type == textType && e.ProductId == productId)
                             .ToListAsync();
-                        
+
                         var product = await _context.Products.FindAsync(productId);
                         await CreateConfigurationsByCharacteristics(characteristics, product);
                     }
                 }
-                    
+
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -113,7 +113,7 @@ namespace istore_api.src.Infrastructure.Repository
             return false;
         }
 
-        public async Task AddImagesToProduct(List<ProductCharacteristic> productCharacteristics, Guid productId)
+        public async Task AddImagesToProduct(ProductCharacteristic productCharacteristic, Guid productId)
         {
             var colorType = CharacteristicType.Color.ToString();
             var characteristics = await GetAll(productId);
@@ -121,28 +121,26 @@ namespace istore_api.src.Infrastructure.Repository
             var isFirstColor = !colorCharacteristics.Any();
 
             var addedCharacteristics = new List<ProductCharacteristic>();
-            foreach(var productCharacteristic in productCharacteristics)
-            {
-                var colorLowercase = productCharacteristic.Color.ToLower();
-                var colorCharacteristic = colorCharacteristics.FirstOrDefault(e => e.Color.ToLower() == colorLowercase);
+            var colorLowercase = productCharacteristic.Color.ToLower();
+            var colorCharacteristic = colorCharacteristics.FirstOrDefault(e => e.Color.ToLower() == colorLowercase);
 
-                if(colorCharacteristic != null)
-                {
-                    var filenames = colorCharacteristic.Values.Split(";").ToList();
-                    var temp = productCharacteristic.Values.Split(";");
-                    filenames.AddRange(temp);
-                    colorCharacteristic.Values = string.Join(";", filenames);
-                }
-                else
-                {
-                    await _context.ProductCharacteristics.AddAsync(productCharacteristic);
-                    colorCharacteristics.Add(productCharacteristic);
-                    addedCharacteristics.Add(productCharacteristic);
-                }
+            if (colorCharacteristic != null)
+            {
+                var filenames = colorCharacteristic.Values.Split(";").ToList();
+                var temp = productCharacteristic.Values.Split(";");
+                filenames.AddRange(temp);
+                colorCharacteristic.Values = string.Join(";", filenames);
+            }
+            else
+            {
+                await _context.ProductCharacteristics.AddAsync(productCharacteristic);
+                colorCharacteristics.Add(productCharacteristic);
+                addedCharacteristics.Add(productCharacteristic);
             }
 
-            if(addedCharacteristics.Any()){
-                if(isFirstColor)
+            if (addedCharacteristics.Any())
+            {
+                if (isFirstColor)
                 {
                     var configurations = await _context.ProductConfigurations.Where(e => e.ProductId == productId).ToListAsync();
                     _context.ProductConfigurations.RemoveRange(configurations);
@@ -150,7 +148,7 @@ namespace istore_api.src.Infrastructure.Repository
                 }
 
                 var addedColorCharacteristic = addedCharacteristics.Where(e => e.Type == colorType);
-                if(addedColorCharacteristic.Any())
+                if (addedColorCharacteristic.Any())
                     await CreateConfigurationsByColorCharacteristics(productId, addedCharacteristics);
             }
 
@@ -161,7 +159,7 @@ namespace istore_api.src.Infrastructure.Repository
         {
             var nameLowercase = name.ToLower();
             return await _context.ProductCharacteristics
-                .FirstOrDefaultAsync(e => 
+                .FirstOrDefaultAsync(e =>
                     e.Name.ToLower() == nameLowercase && e.ProductId == productId);
         }
 
@@ -173,26 +171,26 @@ namespace istore_api.src.Infrastructure.Repository
         private async Task CreateConfigurationsByColorCharacteristics(Guid productId, List<ProductCharacteristic> colorCharacteristics)
         {
             var product = await _context.Products.FirstOrDefaultAsync(e => e.Id == productId);
-            if(product == null)
+            if (product == null)
                 return;
 
             var characteristics = await _context.ProductCharacteristics
                 .Where(e => e.ProductId == productId)
                 .ToListAsync();
-            
+
             var textCharacteristics = await _context.ProductCharacteristics
-                .Where(e => 
+                .Where(e =>
                     e.ProductId == productId &&
                     e.Type == CharacteristicType.Text.ToString())
                 .ToListAsync();
 
-            if(!colorCharacteristics.Any())
+            if (!colorCharacteristics.Any())
             {
                 await CreateConfigurationsByCharacteristics(textCharacteristics, product);
                 return;
             }
 
-            foreach(var colorCharacteristic in colorCharacteristics)
+            foreach (var colorCharacteristic in colorCharacteristics)
             {
                 var temp = textCharacteristics.Append(colorCharacteristic).ToList();
                 await CreateConfigurationsByCharacteristics(temp, product);
@@ -204,10 +202,10 @@ namespace istore_api.src.Infrastructure.Repository
             var combinations = GenerateCombinations(characteristics, 0, new List<ProductCharacteristic>());
             var productConfigurations = new List<ProductConfiguration>();
 
-            foreach(var combination in combinations)
+            foreach (var combination in combinations)
             {
                 var productConfigCharacteristics = new List<ProductConfigCharacteristic>();
-                foreach(var productCharacteristic in combination)
+                foreach (var productCharacteristic in combination)
                 {
                     var newProductConfigCharacteristic = new ProductConfigCharacteristic
                     {
@@ -232,7 +230,7 @@ namespace istore_api.src.Infrastructure.Repository
 
         private async Task CreateConfigurations(Guid productId, bool isRemoveOldConfigurations = false)
         {
-            if(isRemoveOldConfigurations)
+            if (isRemoveOldConfigurations)
             {
                 var configurations = await _context.ProductConfigurations
                     .Where(e => e.ProductId == productId)
@@ -243,11 +241,11 @@ namespace istore_api.src.Infrastructure.Repository
             }
 
             var colorCharacteristics = await _context.ProductCharacteristics
-                .Where(e => 
-                    e.Type == CharacteristicType.Color.ToString() && 
+                .Where(e =>
+                    e.Type == CharacteristicType.Color.ToString() &&
                     e.ProductId == productId
                 ).ToListAsync();
-            
+
             await CreateConfigurationsByColorCharacteristics(productId, colorCharacteristics);
         }
 
@@ -263,11 +261,11 @@ namespace istore_api.src.Infrastructure.Repository
             var currentCharacteristic = characteristics[index];
             var textCharacteristicType = CharacteristicType.Text.ToString();
             var values = new List<string>();
-            if(currentCharacteristic.Type == textCharacteristicType)
+            if (currentCharacteristic.Type == textCharacteristicType)
                 values = currentCharacteristic.Values.Split(";").ToList();
             else
                 values = new List<string> { currentCharacteristic.Color };
-            
+
 
             for (int i = 0; i < values.Count; i++)
             {
@@ -294,7 +292,7 @@ namespace istore_api.src.Infrastructure.Repository
             var configuration = await _context.ProductConfigurations
                 .FirstOrDefaultAsync(e => e.Id == updateProduct.ConfigurationId);
 
-            if(configuration == null)
+            if (configuration == null)
                 return null;
 
             configuration.Price = updateProduct.Price;

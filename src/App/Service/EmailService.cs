@@ -16,8 +16,7 @@ namespace istore_api.src.App.Service
         public EmailService(
             EmailServiceSettings emailServiceSettings,
             ILogger<IEmailService> logger
-            )
-        
+        )
         {
             _senderEmail = new MailboxAddress(emailServiceSettings.SenderName, emailServiceSettings.SenderEmail);
             _senderPassword = emailServiceSettings.SenderPassword;
@@ -28,7 +27,8 @@ namespace istore_api.src.App.Service
 
         public async Task<bool> SendMessage(string email, string subject, string message)
         {
-            try{
+            try
+            {
                 using var emailMessage = new MimeMessage();
                 emailMessage.Subject = subject;
                 emailMessage.From.Add(_senderEmail);
@@ -44,11 +44,12 @@ namespace istore_api.src.App.Service
                 await client.SendAsync(emailMessage);
                 await client.DisconnectAsync(true);
             }
-            catch(Exception ex){
+            catch (Exception ex)
+            {
                 _logger.LogError(ex.Message);
                 return false;
             }
-            
+
             return true;
         }
     }

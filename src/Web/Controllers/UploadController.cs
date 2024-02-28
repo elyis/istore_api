@@ -64,23 +64,20 @@ namespace istore_api.src.Web.Controllers
             var result = await UploadImagesAsync(Constants.localPathToProductIcons, files);
             if (result is OkObjectResult objectResult)
             {
-                var filenameGroups = (List<string>[])objectResult.Value!;
+                var filenames = (List<string>)objectResult.Value!;
                 var colorString = CharacteristicType.Color.ToString();
 
-                var productCharacteristics = filenameGroups
-                .Select(filenames =>
-                    new ProductCharacteristic
-                    {
-                        Name = colorString,
-                        Color = color,
-                        Hex = hex,
-                        Type = colorString,
-                        Values = string.Join(";", filenames),
-                        Product = product
-                    })
-                .ToList();
+                var productCharacteristic = new ProductCharacteristic
+                {
+                    Name = colorString,
+                    Color = color,
+                    Hex = hex,
+                    Type = colorString,
+                    Values = string.Join(";", filenames),
+                    Product = product
+                };
 
-                await _productCharacteristicRepository.AddImagesToProduct(productCharacteristics, productId);
+                await _productCharacteristicRepository.AddImagesToProduct(productCharacteristic, productId);
                 return Ok();
             }
 
@@ -143,14 +140,14 @@ namespace istore_api.src.Web.Controllers
                 streams.Add((stream, fileExtensions));
             }
 
+            var filenames = new List<string>();
             var tasks = new List<Task<List<string>>>();
             foreach (var (stream, fileExtension) in streams)
             {
-                var task = _fileUploaderService.UploadFileAsync(path, stream, fileExtension);
-                tasks.Add(task);
+                var temp = await _fileUploaderService.UploadFileAsync(path, stream, fileExtension);
+                filenames.AddRange(temp);
             }
 
-            var filenames = await Task.WhenAll(tasks);
             return Ok(filenames);
         }
 
