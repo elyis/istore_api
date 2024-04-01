@@ -299,5 +299,17 @@ namespace istore_api.src.Infrastructure.Repository
             await _context.SaveChangesAsync();
             return configuration;
         }
+
+        public async Task<ProductCharacteristic?> UpdateCharacteristicColor(UpdateCharacteristicColorBody colorBody)
+        {
+            var characteristic = await GetAsync(colorBody.Id);
+            if (characteristic == null || characteristic.Type != CharacteristicType.Color.ToString())
+                return null;
+
+            characteristic.Color = colorBody.Color;
+            characteristic.Hex = colorBody.Hex;
+            await _context.SaveChangesAsync();
+            return characteristic;
+        }
     }
 }

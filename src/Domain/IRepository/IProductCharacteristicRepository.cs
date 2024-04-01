@@ -12,6 +12,7 @@ namespace istore_api.src.Domain.IRepository
         Task<IEnumerable<ProductCharacteristic>> GetAll(Guid productId);
         Task AddImagesToProduct(ProductCharacteristic productCharacteristic, Guid productId);
         Task<ProductConfiguration?> UpdateProductConfiguration(UpdateProductConfigurationBody updateProduct);
+        Task<ProductCharacteristic?> UpdateCharacteristicColor(UpdateCharacteristicColorBody colorBody);
         Task<bool> RemoveAsync(Guid id);
     }
 }

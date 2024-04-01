@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
+
 namespace istore_api.src.Web.Controllers
 {
     [ApiController]
@@ -25,6 +26,16 @@ namespace istore_api.src.Web.Controllers
             _productCharacteristicRepository = productCharacteristicRepository;
         }
 
+        [HttpPut("characteristic"), Authorize(Roles = "Admin")]
+        [SwaggerOperation("Изменить цвет товара")]
+        [SwaggerResponse(200)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> UpdateCharacteristicColor(UpdateCharacteristicColorBody colorBody)
+        {
+            var result = await _productCharacteristicRepository.UpdateCharacteristicColor(colorBody);
+            return result == null ? BadRequest() : Ok();
+        }
 
         [HttpPost("characteristic"), Authorize(Roles = "Admin")]
         [SwaggerOperation("Создать характеристику товара")]

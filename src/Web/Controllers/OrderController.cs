@@ -5,7 +5,6 @@ using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
 using istore_api.src.Domain.IRepository;
 using istore_api.src.Domain.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -133,6 +132,27 @@ namespace istore_api.src.Web.Controllers
         {
             var result = await _orderRepository.GetAnalyticBody();
             return Ok(result);
+        }
+
+        [HttpPost("trade-in/request")]
+        [SwaggerOperation("Отправить заявку на trade-in")]
+        [SwaggerResponse(200)]
+        [SwaggerResponse(400)]
+
+        public async Task<IActionResult> TradeInRequest(TradeInRequestBody tradeInRequestBody)
+        {
+            if (string.IsNullOrWhiteSpace(tradeInRequestBody.Message))
+                return BadRequest();
+
+            var message = tradeInRequestBody.Message.Trim();
+            var tradeInMessage = $"Заявка на trade-in\n\n{message}";
+
+            var userInfos = await _telegramBotService.GetChatIdsAsync();
+            var admins = await _userRepository.GetAllOrUpdateByChatId(userInfos);
+            var adminChatIds = admins.Where(e => e.ChatId != null).Select(e => (long)e.ChatId);
+            await _telegramBotService.SendMessageAsync(tradeInMessage, adminChatIds);
+
+            return Ok();
         }
 
         private string CreateOrderMessage(Order order, string? promocode = null)
