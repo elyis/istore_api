@@ -16,6 +16,7 @@ namespace istore_api.src.Web.Controllers
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IInitialRegistrationRepository _initialRegistrationRepository;
         private readonly IPromoCodeRepository _promoCodeRepository;
         private readonly IUserRepository _userRepository;
         private readonly IEmailService _emailService;
@@ -26,6 +27,7 @@ namespace istore_api.src.Web.Controllers
             IOrderRepository orderRepository,
             IProductRepository productRepository,
             IPromoCodeRepository promoCodeRepository,
+            IInitialRegistrationRepository initialRegistrationRepository,
             IUserRepository userRepository,
             IEmailService emailService,
             ITelegramBotService telegramBotService,
@@ -35,6 +37,7 @@ namespace istore_api.src.Web.Controllers
             _orderRepository = orderRepository;
             _productRepository = productRepository;
             _promoCodeRepository = promoCodeRepository;
+            _initialRegistrationRepository = initialRegistrationRepository;
             _userRepository = userRepository;
             _emailService = emailService;
             _telegramBotService = telegramBotService;
@@ -106,21 +109,8 @@ namespace istore_api.src.Web.Controllers
             }
 
             order = await _orderRepository.GetAsync(order.Id);
-            var userInfos = await _telegramBotService.GetChatIdsAsync();
-            var admins = await _userRepository.GetAllOrUpdateByChatId(userInfos);
-            var adminChatIds = admins.Where(e => e.ChatId != null).Select(e => (long)e.ChatId);
-
-            var tasks = new List<Task<bool>>();
             var orderMessage = CreateOrderMessage(order, orderBody.PromoCode);
-            foreach (var email in admins.Select(e => e.Email))
-            {
-                var task = _emailService.SendMessage(email, "iStore", orderMessage);
-                tasks.Add(task);
-            }
-
-
-            await _telegramBotService.SendMessageAsync(orderMessage, adminChatIds);
-            await Task.WhenAll(tasks);
+            await SendNotification(orderMessage);
             return order == null ? BadRequest() : Ok();
         }
 
@@ -141,18 +131,76 @@ namespace istore_api.src.Web.Controllers
 
         public async Task<IActionResult> TradeInRequest(TradeInRequestBody tradeInRequestBody)
         {
-            if (string.IsNullOrWhiteSpace(tradeInRequestBody.Message))
-                return BadRequest();
 
-            var message = tradeInRequestBody.Message.Trim();
-            var tradeInMessage = $"Заявка на trade-in\n\n{message}";
 
+            var message = $"Заявка на trade-in\n\n" +
+                          $"Телефон - {tradeInRequestBody.Phone}\n" +
+                          $"Модель устройства - {tradeInRequestBody.DeviceModel}\n" +
+                          $"Состояние корпуса - {tradeInRequestBody.CorpusState}\n" +
+                          $"Состояние дисплея - {tradeInRequestBody.DisplayState}\n" +
+                          $"Состояние батареи - {tradeInRequestBody.BatteryState}";
+
+            await SendNotification(message);
+
+            return Ok();
+        }
+
+        [HttpPost("discount")]
+        [SwaggerOperation("Отправить заявку на скидку")]
+        [SwaggerResponse(200, Type = typeof(PromoCodeBody))]
+        [SwaggerResponse(409)]
+
+        public async Task<IActionResult> RequestForDiscount(RequestForDiscountBody body)
+        {
+            var initialRegistration = await _initialRegistrationRepository.Create(body.Phone);
+            if (initialRegistration == null)
+                return Conflict("The phone is already registered");
+
+            var promocodeBody = new CreatePromoCodeBody
+            {
+                Type = PromoCodeType.DiscountPercentage,
+                Value = 10,
+            };
+
+            var code = await _promoCodeRepository.AddAsync(promocodeBody);
+            return Ok(code.ToPromoCodeBody());
+        }
+
+
+
+        [HttpPost("request-for-change-cost")]
+        [SwaggerOperation("Отправить заявку на изменение цены покупки")]
+        [SwaggerResponse(200)]
+
+        public async Task<IActionResult> RequestForChangeCost(RequestForChangeCostBody requestForChangeCostBody)
+        {
+            var message = $"Заявка на изменение цены покупки\n\n" +
+                          $"Покупатель - {requestForChangeCostBody.Fullname}\n" +
+                          $"Телефон - {requestForChangeCostBody.Phone}\n" +
+                          $"Модель устройства - {requestForChangeCostBody.DeviceModel}\n" +
+                          $"Ссылка на другой магазин - {requestForChangeCostBody.UrlToOtherStore}";
+
+            await SendNotification(message);
+
+            return Ok();
+        }
+
+        private async Task SendNotification(string message)
+        {
             var userInfos = await _telegramBotService.GetChatIdsAsync();
             var admins = await _userRepository.GetAllOrUpdateByChatId(userInfos);
             var adminChatIds = admins.Where(e => e.ChatId != null).Select(e => (long)e.ChatId);
-            await _telegramBotService.SendMessageAsync(tradeInMessage, adminChatIds);
 
-            return Ok();
+            var tasks = new List<Task<bool>>();
+            foreach (var email in admins.Select(e => e.Email))
+            {
+                var task = _emailService.SendMessage(email, "iStore", message);
+                tasks.Add(task);
+            }
+
+
+            await _telegramBotService.SendMessageAsync(message, adminChatIds);
+            await Task.WhenAll(tasks);
         }
 
         private string CreateOrderMessage(Order order, string? promocode = null)

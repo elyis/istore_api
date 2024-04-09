@@ -164,7 +164,7 @@ namespace istore_api
                     .WithScopedLifetime();
             });
 
-            //InitDatabase();
+            InitDatabase();
         }
 
         public void Configure(WebApplication app, IWebHostEnvironment env)

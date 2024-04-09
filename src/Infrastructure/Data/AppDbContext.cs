@@ -29,13 +29,14 @@ namespace istore_api.src.Infrastructure.Data
 
         public DbSet<ProductConfiguration> ProductConfigurations { get; set; }
         public DbSet<ProductConfigCharacteristic> ProductConfigCharacteristics { get; set; }
+        public DbSet<InitialRegistration> InitialRegistrations { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var connectionString = _config.GetConnectionString("DefaultConnection");
 
-            optionsBuilder.UseNpgsql(connectionString);
+            optionsBuilder.UseSqlite(connectionString);
             optionsBuilder.EnableSensitiveDataLogging();
             base.OnConfiguring(optionsBuilder);
         }
