@@ -36,7 +36,7 @@ namespace istore_api.src.Infrastructure.Data
         {
             var connectionString = _config.GetConnectionString("DefaultConnection");
 
-            optionsBuilder.UseSqlite(connectionString);
+            optionsBuilder.UseNpgsql(connectionString);
             optionsBuilder.EnableSensitiveDataLogging();
             base.OnConfiguring(optionsBuilder);
         }
