@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace istore_api.src.Domain.Models
 {
+    [NotMapped]
     public class Order
     {
         public Guid Id { get; set; }

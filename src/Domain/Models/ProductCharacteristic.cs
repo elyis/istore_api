@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
 
 namespace istore_api.src.Domain.Models
 {
+    [NotMapped]
     public class ProductCharacteristic
     {
         public Guid Id { get; set; }
@@ -32,7 +34,7 @@ namespace istore_api.src.Domain.Models
         {
             var colorType = CharacteristicType.Color.ToString();
             var values = Values.Split(";").ToList();
-            if(Type == colorType)
+            if (Type == colorType)
                 values = values.Select(filename => $"{Constants.webPathToProductIcons}{filename}").ToList();
 
             return new ProductCharacteristicElem()

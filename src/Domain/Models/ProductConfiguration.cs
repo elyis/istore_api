@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using istore_api.src.Domain.Entities.Response;
 
 namespace istore_api.src.Domain.Models
 {
+    [NotMapped]
     public class ProductConfiguration
     {
         public Guid Id { get; set; }
@@ -10,7 +12,7 @@ namespace istore_api.src.Domain.Models
         public Product Product { get; set; }
         public Guid ProductId { get; set; }
 
-        public List<ProductConfigCharacteristic> Characteristics { get; set;} = new();
+        public List<ProductConfigCharacteristic> Characteristics { get; set; } = new();
 
         public ProductConfigurationBody ToProductConfigCharacteristic()
             => new()

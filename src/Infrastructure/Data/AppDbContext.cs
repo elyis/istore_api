@@ -67,6 +67,7 @@ namespace istore_api.src.Infrastructure.Data
                 e.ProductCharacteristicId,
                 e.ProductConfigurationId
             });
+
             base.OnModelCreating(modelBuilder);
         }
     }
