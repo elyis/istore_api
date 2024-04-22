@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace istore_api.src.Domain.Models
 {
-    [NotMapped]
     [Index(nameof(Code))]
     public class PromoCode
     {

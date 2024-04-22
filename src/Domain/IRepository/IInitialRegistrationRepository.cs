@@ -4,7 +4,7 @@ namespace istore_api.src.Domain.IRepository
 {
     public interface IInitialRegistrationRepository
     {
-        Task<InitialRegistration?> GetByPhone(string phone);
-        Task<InitialRegistration?> Create(string phone);
+        Task<InitialRegistration?> Get(string email);
+        Task<InitialRegistration?> Create(string email);
     }
 }

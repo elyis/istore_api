@@ -14,15 +14,15 @@ namespace istore_api.src.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<InitialRegistration?> Create(string phone)
+        public async Task<InitialRegistration?> Create(string email)
         {
-            var initialRegistration = await GetByPhone(phone);
+            var initialRegistration = await Get(email);
             if (initialRegistration != null)
                 return null;
 
             initialRegistration = new InitialRegistration
             {
-                Phone = phone
+                Email = email
             };
             await _context.InitialRegistrations.AddAsync(initialRegistration);
             await _context.SaveChangesAsync();
@@ -30,9 +30,9 @@ namespace istore_api.src.Infrastructure.Repository
 
         }
 
-        public async Task<InitialRegistration?> GetByPhone(string phone)
+        public async Task<InitialRegistration?> Get(string email)
         {
-            return await _context.InitialRegistrations.FirstOrDefaultAsync(e => e.Phone == phone);
+            return await _context.InitialRegistrations.FirstOrDefaultAsync(e => e.Email == email);
         }
 
     }

@@ -15,11 +15,11 @@ namespace istore_api.Migrations
                 name: "Blogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ShortDescription = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Date = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ShortDescription = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -27,16 +27,29 @@ namespace istore_api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InitialRegistrations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InitialRegistrations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Fullname = table.Column<string>(type: "TEXT", nullable: false),
-                    Phone = table.Column<string>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: true),
-                    CommunicationMethod = table.Column<string>(type: "TEXT", nullable: false),
-                    Comment = table.Column<string>(type: "TEXT", nullable: true),
-                    TotalSum = table.Column<float>(type: "REAL", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Fullname = table.Column<string>(type: "text", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    CommunicationMethod = table.Column<string>(type: "text", nullable: false),
+                    Comment = table.Column<string>(type: "text", nullable: true),
+                    TotalSum = table.Column<float>(type: "real", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,7 +60,7 @@ namespace istore_api.Migrations
                 name: "ProductCategories",
                 columns: table => new
                 {
-                    Name = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -58,12 +71,12 @@ namespace istore_api.Migrations
                 name: "PromoCodes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", nullable: false),
-                    Code = table.Column<string>(type: "TEXT", nullable: false),
-                    Value = table.Column<float>(type: "REAL", nullable: false),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
-                    DateExpiration = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<float>(type: "real", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    DateExpiration = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,17 +87,18 @@ namespace istore_api.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    RoleName = table.Column<string>(type: "TEXT", nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
-                    RestoreCode = table.Column<string>(type: "TEXT", nullable: true),
-                    RestoreCodeValidBefore = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    WasPasswordResetRequest = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Token = table.Column<string>(type: "TEXT", nullable: true),
-                    TokenValidBefore = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Image = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    RoleName = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    RestoreCode = table.Column<string>(type: "text", nullable: true),
+                    RestoreCodeValidBefore = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    WasPasswordResetRequest = table.Column<bool>(type: "boolean", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: true),
+                    TokenValidBefore = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Image = table.Column<string>(type: "text", nullable: true),
+                    ChatId = table.Column<long>(type: "bigint", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,8 +109,8 @@ namespace istore_api.Migrations
                 name: "DeviceModels",
                 columns: table => new
                 {
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ProductCategoryName = table.Column<string>(type: "TEXT", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ProductCategoryName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -113,10 +127,10 @@ namespace istore_api.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    DeviceModelName = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    DeviceModelName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -130,40 +144,16 @@ namespace istore_api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderProducts",
-                columns: table => new
-                {
-                    OrderId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ProductId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Count = table.Column<int>(type: "INTEGER", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderProducts", x => new { x.OrderId, x.ProductId });
-                    table.ForeignKey(
-                        name: "FK_OrderProducts_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OrderProducts_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProductCharacteristics",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", nullable: false),
-                    Values = table.Column<string>(type: "TEXT", nullable: false),
-                    Hex = table.Column<string>(type: "TEXT", nullable: true),
-                    ProductId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Type = table.Column<string>(type: "text", nullable: false),
+                    Values = table.Column<string>(type: "text", nullable: false),
+                    Hex = table.Column<string>(type: "text", nullable: true),
+                    Color = table.Column<string>(type: "text", nullable: true),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -180,9 +170,9 @@ namespace istore_api.Migrations
                 name: "ProductConfigurations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Price = table.Column<float>(type: "REAL", nullable: false),
-                    ProductId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Price = table.Column<float>(type: "real", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -196,73 +186,55 @@ namespace istore_api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductImages",
+                name: "OrderProducts",
                 columns: table => new
                 {
-                    Filename = table.Column<string>(type: "TEXT", nullable: false),
-                    IsPreviewImage = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Color = table.Column<string>(type: "TEXT", nullable: false),
-                    Hex = table.Column<string>(type: "TEXT", nullable: false),
-                    ProductId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    OrderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductConfigurationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Count = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductImages", x => x.Filename);
+                    table.PrimaryKey("PK_OrderProducts", x => new { x.OrderId, x.ProductConfigurationId });
                     table.ForeignKey(
-                        name: "FK_ProductImages_Products_ProductId",
+                        name: "FK_OrderProducts_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderProducts_ProductConfigurations_ProductConfigurationId",
+                        column: x => x.ProductConfigurationId,
+                        principalTable: "ProductConfigurations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderProducts_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductCharacteristicVariants",
-                columns: table => new
-                {
-                    CharacteristicName = table.Column<string>(type: "TEXT", nullable: false),
-                    ProductId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CharacteristicId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Values = table.Column<string>(type: "TEXT", nullable: false),
-                    GrowthToValues = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductCharacteristicVariants", x => new { x.ProductId, x.CharacteristicName });
-                    table.ForeignKey(
-                        name: "FK_ProductCharacteristicVariants_ProductCharacteristics_CharacteristicId",
-                        column: x => x.CharacteristicId,
-                        principalTable: "ProductCharacteristics",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProductCharacteristicVariants_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProductConfigCharacteristics",
                 columns: table => new
                 {
-                    ProductConfigurationId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ProductCharacteristicId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: false),
-                    Type = table.Column<string>(type: "TEXT", nullable: false)
+                    ProductConfigurationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductCharacteristicId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductConfigCharacteristics", x => new { x.ProductCharacteristicId, x.ProductConfigurationId });
                     table.ForeignKey(
-                        name: "FK_ProductConfigCharacteristics_ProductCharacteristics_ProductCharacteristicId",
+                        name: "FK_ProductConfigCharacteristics_ProductCharacteristics_Product~",
                         column: x => x.ProductCharacteristicId,
                         principalTable: "ProductCharacteristics",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductConfigCharacteristics_ProductConfigurations_ProductConfigurationId",
+                        name: "FK_ProductConfigCharacteristics_ProductConfigurations_ProductC~",
                         column: x => x.ProductConfigurationId,
                         principalTable: "ProductConfigurations",
                         principalColumn: "Id",
@@ -275,6 +247,11 @@ namespace istore_api.Migrations
                 column: "ProductCategoryName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderProducts_ProductConfigurationId",
+                table: "OrderProducts",
+                column: "ProductConfigurationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderProducts_ProductId",
                 table: "OrderProducts",
                 column: "ProductId");
@@ -285,11 +262,6 @@ namespace istore_api.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductCharacteristicVariants_CharacteristicId",
-                table: "ProductCharacteristicVariants",
-                column: "CharacteristicId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ProductConfigCharacteristics_ProductConfigurationId",
                 table: "ProductConfigCharacteristics",
                 column: "ProductConfigurationId");
@@ -297,11 +269,6 @@ namespace istore_api.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ProductConfigurations_ProductId",
                 table: "ProductConfigurations",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductImages_ProductId",
-                table: "ProductImages",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -334,16 +301,13 @@ namespace istore_api.Migrations
                 name: "Blogs");
 
             migrationBuilder.DropTable(
+                name: "InitialRegistrations");
+
+            migrationBuilder.DropTable(
                 name: "OrderProducts");
 
             migrationBuilder.DropTable(
-                name: "ProductCharacteristicVariants");
-
-            migrationBuilder.DropTable(
                 name: "ProductConfigCharacteristics");
-
-            migrationBuilder.DropTable(
-                name: "ProductImages");
 
             migrationBuilder.DropTable(
                 name: "PromoCodes");

@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using istore_api.src.Domain.Entities.Response;
 using istore_api.src.Domain.Enums;
 
 namespace istore_api.src.Domain.Models
 {
-    [NotMapped]
     public class OrderProduct
     {
         public Guid OrderId { get; set; }

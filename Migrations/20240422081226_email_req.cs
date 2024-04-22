@@ -5,24 +5,24 @@
 namespace istore_api.Migrations
 {
     /// <inheritdoc />
-    public partial class init5 : Migration
+    public partial class email_req : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "ChatId",
-                table: "Users",
-                type: "INTEGER",
-                nullable: true);
+            migrationBuilder.RenameColumn(
+                name: "Phone",
+                table: "InitialRegistrations",
+                newName: "Email");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ChatId",
-                table: "Users");
+            migrationBuilder.RenameColumn(
+                name: "Email",
+                table: "InitialRegistrations",
+                newName: "Phone");
         }
     }
 }

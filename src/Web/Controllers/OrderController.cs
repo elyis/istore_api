@@ -152,9 +152,9 @@ namespace istore_api.src.Web.Controllers
 
         public async Task<IActionResult> RequestForDiscount(RequestForDiscountBody body)
         {
-            var initialRegistration = await _initialRegistrationRepository.Create(body.Phone);
+            var initialRegistration = await _initialRegistrationRepository.Create(body.Email);
             if (initialRegistration == null)
-                return Conflict("The phone is already registered");
+                return Conflict("The email is already used");
 
             var promocodeBody = new CreatePromoCodeBody
             {
@@ -163,7 +163,11 @@ namespace istore_api.src.Web.Controllers
             };
 
             var code = await _promoCodeRepository.AddAsync(promocodeBody);
-            return Ok(code.ToPromoCodeBody());
+            var promocode = code.ToPromoCodeBody().Code;
+
+            var message = $"Промокод на скидку в 10%: {promocode}";
+            await _emailService.SendMessage(body.Email, "Промокод", message);
+            return Ok();
         }
 
 
